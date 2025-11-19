@@ -1,28 +1,29 @@
 // lib/app/data/services/local_storage_service.dart
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart'; 
 import '../models/cart_model.dart'; 
 
 class LocalStorageService {
-  // FIX: Hapus 'late' dan jadikan Nullable (diinisialisasi dengan null secara implisit)
   SharedPreferences? prefs; 
-  Box<CartItemModel>? cartBox; // FIX: Hapus 'late' dan jadikan nullable
+  Box<CartItemModel>? cartBox; 
   
   static const String kThemeKey = 'app_theme';
 
   Future<void> init() async {
-    // Inisialisasi prefs
     prefs = await SharedPreferences.getInstance();
-    
-    // Inisialisasi Hive
     await Hive.initFlutter();
-    Hive.registerAdapter(CartItemModelAdapter()); 
-    // cartBox diinisialisasi
+    
+    // FIX KRUSIAL: Registrasi Adapter harus ada. typeId=0 dari CartItemModel
+    if (!Hive.isAdapterRegistered(0)) { 
+        Hive.registerAdapter(CartItemModelAdapter()); 
+    }
+
     cartBox = await Hive.openBox<CartItemModel>('cartBox'); 
   }
 
-  // getThemeMode dan setThemeMode menggunakan ?. untuk null safety
+  // --- Logic shared_preferences: Tema ---
   ThemeMode getThemeMode() {
     final themeIndex = prefs?.getInt(kThemeKey); 
     if (themeIndex == 1) {

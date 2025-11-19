@@ -1,3 +1,5 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,18 +21,19 @@ Future<void> main() async {
   
   // ---------------------------------------------------------
   // 1. INISIALISASI SERVICE (DATABASE & LOCAL STORAGE)
-  // Menggunakan Get.putAsync dengan logika 'await' yang ketat
   // ---------------------------------------------------------
 
   // Init Local Storage (Hive & SharedPrefs)
-  await Get.putAsync(() async {
+  // FIX: Menambahkan tipe generic <LocalStorageService>
+  await Get.putAsync<LocalStorageService>(() async { 
     final service = LocalStorageService();
     await service.init(); // Tunggu sampai Hive Box terbuka
     return service;
   });
 
   // Init Supabase (Cloud)
-  await Get.putAsync(() async {
+  // FIX: Menambahkan tipe generic <SupabaseProvider>
+  await Get.putAsync<SupabaseProvider>(() async {
     final provider = SupabaseProvider();
     await provider.init(); // Tunggu sampai koneksi Supabase stabil
     return provider;
@@ -52,7 +55,7 @@ class MyApp extends StatelessWidget {
       title: "Muktijaya1 - Packaging Kardus",
       debugShowCheckedModeBanner: false,
       
-      // Pengaturan Tema (diambil dari Shared Preferences)
+      // Pengaturan Tema (Modul 4: Shared Preferences)
       themeMode: localStorage.getThemeMode(), 
       theme: ThemeData(
         primarySwatch: Colors.brown, 
@@ -63,24 +66,24 @@ class MyApp extends StatelessWidget {
       ),
       darkTheme: ThemeData.dark(), 
       
-      // Rute Awal: Login (Agar User ID tersedia untuk Supabase)
+      // Rute Awal: Login (Memastikan User ID tersedia untuk Supabase)
       initialRoute: "/login", 
       
       // Daftar Halaman (Routes)
       getPages: [
-        // Halaman Login
+        // Halaman Login/Auth
         GetPage(
           name: "/login", 
           page: () => const AuthView(),
           binding: AuthBinding(),
         ),
-        // Halaman Katalog Produk
+        // Halaman Katalog Produk (Modul 2 & 3)
         GetPage(
           name: "/katalog",
           page: () => const KatalogView(),
           binding: KatalogBinding(),
         ),
-        // Halaman Keranjang & Sinkronisasi
+        // Halaman Keranjang & Sinkronisasi (Modul 4)
         GetPage(
           name: "/keranjang",
           page: () => const KeranjangView(),
