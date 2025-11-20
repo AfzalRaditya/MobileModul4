@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart'; 
 import '../models/cart_model.dart'; 
 
+
 class LocalStorageService {
   SharedPreferences? prefs; 
   Box<CartItemModel>? cartBox; 
@@ -13,9 +14,9 @@ class LocalStorageService {
 
   Future<void> init() async {
     prefs = await SharedPreferences.getInstance();
+
     await Hive.initFlutter();
     
-    // FIX KRUSIAL: Registrasi Adapter harus ada. typeId=0 dari CartItemModel
     if (!Hive.isAdapterRegistered(0)) { 
         Hive.registerAdapter(CartItemModelAdapter()); 
     }
@@ -23,7 +24,6 @@ class LocalStorageService {
     cartBox = await Hive.openBox<CartItemModel>('cartBox'); 
   }
 
-  // --- Logic shared_preferences: Tema ---
   ThemeMode getThemeMode() {
     final themeIndex = prefs?.getInt(kThemeKey); 
     if (themeIndex == 1) {

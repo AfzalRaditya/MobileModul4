@@ -15,7 +15,6 @@ class KeranjangView extends GetView<KeranjangController> {
       ),
       body: Column(
         children: [
-          // Bagian Scrollable (Data List)
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -30,29 +29,27 @@ class KeranjangView extends GetView<KeranjangController> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const Divider(),
                   
-                  // List Keranjang Lokal (menggunakan ListTile interaktif)
                   ...controller.itemsLokal.map((item) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(item.productName),
                     subtitle: Text('Rp ${item.price.toStringAsFixed(0)}'),
                     
-                    // UI CRUD: Update Quantity (+/-) & Delete
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Hapus / Kurangi Kuantitas
+
                         IconButton(
                           icon: const Icon(Icons.remove_circle_outline, size: 20, color: Colors.red),
                           onPressed: () => controller.updateLocalQuantity(item.productId, item.quantity - 1), 
                         ),
-                        // Tampilkan Kuantitas
+                        
                         SizedBox(width: 24, child: Text('${item.quantity}', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
-                        // Tambah Kuantitas
+                        
                         IconButton(
                           icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.green),
                           onPressed: () => controller.updateLocalQuantity(item.productId, item.quantity + 1),
                         ),
-                        // Tombol Delete Langsung
+                        
                         IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.grey),
                           onPressed: () => controller.deleteLocalItem(item.productId),
@@ -63,7 +60,7 @@ class KeranjangView extends GetView<KeranjangController> {
                   
                   const SizedBox(height: 10),
                   const Divider(thickness: 2),
-                  // Tampilkan Total Harga Lokal
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -81,12 +78,11 @@ class KeranjangView extends GetView<KeranjangController> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const Divider(),
 
-                  // List Keranjang Cloud (Hasil Sinkronisasi Terakhir)
+                 
                   ...controller.itemsCloud.map((item) => ListTile(
                     title: Text(item.productName),
                     subtitle: Text('Kuantitas: ${item.quantity} | Total: Rp ${(item.price * item.quantity).toStringAsFixed(0)}'),
                     
-                    // Delete dari Cloud
                     trailing: IconButton(
                       icon: const Icon(Icons.cloud_off, color: Colors.blueGrey),
                       onPressed: () => controller.deleteCloudItem(item.productId), 
@@ -97,7 +93,6 @@ class KeranjangView extends GetView<KeranjangController> {
             ),
           ),
           
-          // Bagian Tombol Aksi (Sinkronisasi)
           Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -106,7 +101,7 @@ class KeranjangView extends GetView<KeranjangController> {
             ),
             child: Column(
               children: [
-                // Tombol Sinkronisasi (Wajib Modul 4)
+                
                 ElevatedButton(
                   onPressed: controller.syncLocalToCloud,
                   style: ElevatedButton.styleFrom(
@@ -117,7 +112,7 @@ class KeranjangView extends GetView<KeranjangController> {
                   child: const Text('➡️ SINKRONKAN LOKAL KE CLOUD (UPSERT)'),
                 ),
                 const SizedBox(height: 10),
-                // Tombol untuk Memuat Ulang Data Cloud
+                
                 ElevatedButton.icon(
                   onPressed: controller.fetchCloudCart,
                   icon: const Icon(Icons.refresh),

@@ -11,42 +11,33 @@ class ApiService {
   final String productEndpoint = "/Products";
   late final Dio _dio;
 
-
-  // Constructor untuk menginisialisasi Dio dan Interceptor
   ApiService() {
-    // Definisikan BaseOptions dengan timeout dan Header Kustom
     _dio = Dio(BaseOptions(
       baseUrl: _baseUrl,
-      connectTimeout: const Duration(seconds: 10), // Menambahkan Connect Timeout
-      receiveTimeout: const Duration(seconds: 10), // Menambahkan Receive Timeout
+      connectTimeout: const Duration(seconds: 10), 
+      receiveTimeout: const Duration(seconds: 10), 
       headers: {
-        // --- HEADER KUSTOM (Mirip dengan Log Anda) ---
-        'User-Agent': 'Muktijaya1App/1.0', // Ganti nama aplikasi Anda
+        'User-Agent': 'Muktijaya1App/1.0', 
         'Accept': 'application/json',
       },
     ));
    
-    // --- SISIPAN LOG INTERCEPTOR (WAJIB MODUL 3) ---
     _dio.interceptors.add(
       LogInterceptor(
         requestBody: true,
         responseBody: true,
-        requestHeader: true, // Akan mencetak header kustom di atas
+        requestHeader: true, 
         responseHeader: true,
         error: true,
       ),
     );
-    // ---------------------------------------------
   }
 
-
-  // --- LOGIC UTAMA: Menggunakan Dio (Waktu Respons Dio akan dicatat) ---
   Future<List<ProductModel>> fetchProductsDio() async {
     final stopwatch = Stopwatch()..start();
     try {
       final response = await _dio.get(productEndpoint);
      
-      // LOGGING WAKTU RESPONS DIO
       if (kDebugMode) {
         debugPrint("PERFORMA UJI: Dio Response Time: ${stopwatch.elapsedMilliseconds}ms");
       }
@@ -68,15 +59,12 @@ class ApiService {
     }
   }
 
-
-  // --- LOGIC PERBANDINGAN: Menggunakan http (Waktu Respons http akan dicatat) ---
   Future<List<ProductModel>> fetchProductsHttp() async {
     final stopwatch = Stopwatch()..start();
     try {
       final uri = Uri.parse("$_baseUrl$productEndpoint");
       final response = await http.get(uri);
-     
-      // LOGGING WAKTU RESPONS HTTP
+
       if (kDebugMode) {
         debugPrint("PERFORMA UJI: Http Response Time: ${stopwatch.elapsedMilliseconds}ms");
       }

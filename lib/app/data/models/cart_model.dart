@@ -1,10 +1,8 @@
 // lib/app/data/models/cart_model.dart
 import 'package:hive/hive.dart';
-
-// part ini yang akan di-generate oleh build_runner
 part 'cart_model.g.dart'; 
 
-@HiveType(typeId: 0) // typeId harus unik
+@HiveType(typeId: 0) 
 class CartItemModel {
   @HiveField(0)
   final String productId;
@@ -22,7 +20,6 @@ class CartItemModel {
     required this.quantity,
   });
 
-  // Metode untuk konversi ke format Map (untuk Supabase)
   Map<String, dynamic> toMap() {
     return {
       'product_id': productId,

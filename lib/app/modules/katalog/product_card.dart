@@ -1,17 +1,15 @@
 // lib/app/modules/katalog/product_card.dart
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../../data/models/product_model.dart';
-import 'katalog_controller.dart'; 
+import '../../data/models/product_model.dart'; 
 
 // =========================================================
-// WIDGET: AnimatedBuyButton (Modifikasi: menerima produk)
+// WIDGET: AnimatedBuyButton 
 // =========================================================
 
 class AnimatedBuyButton extends StatefulWidget {
-  final ProductModel produk; // Terima data produk
-  const AnimatedBuyButton({required this.produk, super.key});
+  final VoidCallback onTap; // <-- Wajib ada
+  const AnimatedBuyButton({required this.onTap, super.key}); 
 
   @override
   AnimatedBuyButtonState createState() => AnimatedBuyButtonState();
@@ -21,13 +19,10 @@ class AnimatedBuyButtonState extends State<AnimatedBuyButton> {
   Color _color = Colors.blue;
   double _height = 40.0;
   String _text = "Tambahkan ke Keranjang";
-  final KatalogController _controller = Get.find<KatalogController>(); // Ambil Controller
 
   void _handleBuy() {
-    // 1. Panggil fungsi penyimpanan ke Hive (Modul 4)
-    _controller.addToCart(widget.produk); 
-
-    // 2. Animasi Umpan Balik (Modul 2)
+    widget.onTap(); 
+    
     setState(() {
       _color = Colors.green; 
       _height = 50.0;
@@ -65,12 +60,14 @@ class AnimatedBuyButtonState extends State<AnimatedBuyButton> {
 }
 
 // =========================================================
-// WIDGET: ProductCard (Meneruskan produk ke AnimatedBuyButton)
+// WIDGET: ProductCard (Widget Utama Kartu)
 // =========================================================
 
 class ProductCard extends StatelessWidget {
   final ProductModel produk;
-  const ProductCard({required this.produk, super.key}); 
+  final VoidCallback onBuy; 
+  
+  const ProductCard({required this.produk, required this.onBuy, super.key}); 
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +77,6 @@ class ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Gambar Produk
           Expanded(
             flex: 4,
             child: Image.network(
@@ -89,7 +85,6 @@ class ProductCard extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, size: 50)),
             ),
           ),
-          // Detail dan Harga
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -102,7 +97,7 @@ class ProductCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                // Harga Utama
+
                 Text(
                   "Rp ${produk.harga.toStringAsFixed(2)}",
                   style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16),
@@ -110,10 +105,9 @@ class ProductCard extends StatelessWidget {
               ],
             ),
           ),
-          // Tombol Tambah Keranjang (Implementasi Modul 4)
           Expanded(
             flex: 1,
-            child: AnimatedBuyButton(produk: produk), // <-- Meneruskan produk
+            child: AnimatedBuyButton(onTap: onBuy), 
           ),
         ],
       ),

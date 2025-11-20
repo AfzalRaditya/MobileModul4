@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../../data/providers/supabase_provider.dart';
-// FIX KRITIS: Import KeranjangController agar tipe datanya dikenal (Severity 8)
 import '../keranjang/keranjang_controller.dart'; 
 
 class AuthController extends GetxController {
@@ -19,7 +18,6 @@ class AuthController extends GetxController {
   
   RxBool isLoading = false.obs;
   
-  // FIX LINT: Variabel reaktif harus final
   final RxBool _isLoggedInRx = false.obs; 
   bool get isLoggedIn => _isLoggedInRx.value; 
 
@@ -28,7 +26,6 @@ class AuthController extends GetxController {
     super.onInit();
     _updateLoginStatus(); 
     
-    // Pasang Listener Supabase untuk perubahan status real-time
     _supabaseProvider.client.value?.auth.onAuthStateChange.listen((data) {
         _updateLoginStatus();
     });
@@ -37,7 +34,6 @@ class AuthController extends GetxController {
   void _updateLoginStatus() {
     _isLoggedInRx.value = _supabaseClient.auth.currentUser != null;
     
-    // Pemicu untuk KeranjangController (Sekarang tipe datanya sudah dikenal)
     if (Get.isRegistered<KeranjangController>()) {
         Get.find<KeranjangController>().fetchCloudCart();
     }

@@ -10,18 +10,13 @@ import '../../data/models/product_model.dart';
 class KeranjangController extends GetxController {
   final LocalStorageService _localStorage = Get.find<LocalStorageService>();
   
-  // Akses langsung ke instance global Supabase
   SupabaseClient get _supabaseClient => Supabase.instance.client;
   
-  // State Lokal (Hive)
   RxList<CartItemModel> itemsLokal = <CartItemModel>[].obs; 
-  // State Cloud (Supabase) - Menggambarkan hasil sinkronisasi terakhir
   RxList<CartItemModel> itemsCloud = <CartItemModel>[].obs;
   
-  // Variabel dummy (untuk non-auth user)
   final String dummyUserId = 'dummy_user_id'; 
   
-  // Mendapatkan ID Pengguna yang sedang login (currentUserId)
   String? get currentUserId {
     try {
       return _supabaseClient.auth.currentUser?.id;
@@ -30,11 +25,30 @@ class KeranjangController extends GetxController {
     }
   }
 
-  // Getter yang digunakan di logika bisnis (fallback ke dummy ID)
   String get userIdentifier => currentUserId ?? dummyUserId;
-
-  // Menghitung Total Harga Lokal
   double get totalHarga => itemsLokal.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+  
+  // =========================================================
+  // HELPER: SINKRONISASI HIVE YANG AMAN
+  // =========================================================
+  void _syncHiveSafely() {
+    if (_localStorage.cartBox == null) {
+      debugPrint("Error: Hive Box belum terbuka.");
+      return;
+    }
+    
+    try {
+      final box = _localStorage.cartBox!; 
+      
+      box.clear(); 
+      box.addAll(itemsLokal);
+      itemsLokal.refresh();
+
+    } catch (e) {
+      debugPrint("FATAL HIVE SYNC ERROR: $e");
+      Get.snackbar("Error Data", "Kesalahan penulisan data lokal. Mohon restart aplikasi.");
+    }
+  }
   
   // =========================================================
   // R: READ & INITIALIZATION
@@ -42,7 +56,6 @@ class KeranjangController extends GetxController {
   
   @override
   void onReady() {
-    // Memastikan cartBox sudah tersedia sebelum diakses
     if (_localStorage.cartBox?.isOpen == true) { 
       itemsLokal.assignAll(_localStorage.cartBox!.values); 
     }
@@ -50,11 +63,10 @@ class KeranjangController extends GetxController {
     super.onReady();
   }
   
-  // Read Cloud Cart (R)
   Future<void> fetchCloudCart() async {
     final userIdentifier = currentUserId ?? dummyUserId; 
     
-    if (userIdentifier == dummyUserId) { // Jika masih menggunakan dummy ID
+    if (userIdentifier == dummyUserId) { 
       debugPrint("Pengguna belum login. Melewati sinkronisasi cloud.");
       itemsCloud.clear();
       return;
@@ -62,11 +74,10 @@ class KeranjangController extends GetxController {
     
     try {
       final List<Map<String, dynamic>> rawData = await _supabaseClient 
-          .from('carts') // Nama tabel di Supabase
+          .from('carts') 
           .select()
           .eq('user_id', userIdentifier); 
 
-      // Mapping data mentah ke CartItemModel
       itemsCloud.assignAll(rawData.map((e) => CartItemModel(
         productId: e['product_id'] as String? ?? 'n/a', 
         productName: e['product_name'] as String? ?? 'n/a', 
@@ -99,9 +110,10 @@ class KeranjangController extends GetxController {
         price: produk.harga,
         quantity: 1,
       );
-      _localStorage.cartBox?.add(newItem); 
+      itemsLokal.add(newItem); 
       
-      itemsLokal.assignAll(_localStorage.cartBox?.values ?? []);
+      _syncHiveSafely(); 
+      
       Get.snackbar("Lokal", "${produk.nama} ditambahkan (Hive)");
     }
   }
@@ -120,9 +132,7 @@ class KeranjangController extends GetxController {
     if (index >= 0) {
       itemsLokal[index].quantity = newQuantity;
       
-      _localStorage.cartBox?.clear(); 
-      _localStorage.cartBox?.addAll(itemsLokal); 
-      itemsLokal.refresh(); 
+      _syncHiveSafely(); 
       debugPrint("Hive Updated: $productId quantity to $newQuantity");
     }
   }
@@ -134,24 +144,19 @@ class KeranjangController extends GetxController {
   void deleteLocalItem(String productId) {
     itemsLokal.removeWhere((item) => item.productId == productId);
     
-    _localStorage.cartBox?.clear(); 
-    _localStorage.cartBox?.addAll(itemsLokal); 
-    itemsLokal.refresh(); 
+    _syncHiveSafely(); 
     debugPrint("Hive Deleted: $productId");
   }
 
-  // DELETE CLOUD (Wajib CRUD Supabase)
   Future<void> deleteCloudItem(String productId) async {
     final userIdentifier = currentUserId ?? dummyUserId;
     
-    // Jika user belum login dan masih dummy, jangan hapus.
     if (userIdentifier == dummyUserId) {
         Get.snackbar("Error", "Tidak bisa menghapus data Cloud tanpa autentikasi.");
         return;
     }
 
     try {
-      // DELETE: Menghapus item dari keranjang di Supabase
       await _supabaseClient
           .from('carts') 
           .delete()
@@ -182,7 +187,6 @@ class KeranjangController extends GetxController {
     final data = itemsLokal.map((item) => item.toMap()..['user_id'] = userIdentifier).toList();
     
     try {
-      // Supabase UPSERT
       await _supabaseClient.from('carts').upsert(data, onConflict: 'user_id, product_id'); 
       
       fetchCloudCart();

@@ -8,7 +8,6 @@ class AuthView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Langsung tampilkan form, jangan cek provider lagi
     return GetBuilder<AuthController>(
       init: Get.find<AuthController>(), 
       builder: (controller) {
@@ -26,7 +25,6 @@ class AuthView extends StatelessWidget {
                   const Text("Masuk untuk Sinkronisasi Cloud", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 30),
 
-                  // Input Email
                   TextField(
                     controller: emailController,
                     decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder(), prefixIcon: Icon(Icons.email)),
@@ -34,7 +32,6 @@ class AuthView extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
 
-                  // Input Password
                   TextField(
                     controller: passwordController,
                     decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder(), prefixIcon: Icon(Icons.lock)),
@@ -42,7 +39,6 @@ class AuthView extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
 
-                  // Tombol Login
                   Obx(() => ElevatedButton(
                     onPressed: controller.isLoading.value ? null : () {
                       controller.signIn(emailController.text.trim(), passwordController.text.trim());

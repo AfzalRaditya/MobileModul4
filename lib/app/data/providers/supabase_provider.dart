@@ -8,10 +8,8 @@ class SupabaseProvider extends GetxService {
   static const String kSupabaseUrl = 'https://kyvouonzilkohektxvkn.supabase.co'; 
   static const String kSupabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dm91b256aWxrb2hla3R4dmtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzMDE5MzcsImV4cCI6MjA3ODg3NzkzN30.xN-gWyXMZSRUqkIQd-1gq1-nba5Mho3GEHZ5Kvtm61Q';
   
-  // Variabel Observable untuk Client
   Rx<SupabaseClient?> client = Rx<SupabaseClient?>(null); 
   
-  // FIX: Variabel Observable untuk menyimpan pesan error
   RxString initializationError = ''.obs; 
 
   Future<void> init() async {
@@ -22,9 +20,8 @@ class SupabaseProvider extends GetxService {
             debug: true,
         );
         client.value = Supabase.instance.client; 
-        initializationError.value = ''; // Kosongkan error jika sukses
+        initializationError.value = ''; 
     } catch (e) {
-        // JIKA GAGAL, simpan pesan error di variabel Observable
         debugPrint("FATAL SUPABASE ERROR DURING INIT: $e"); 
         initializationError.value = e.toString();
     }
