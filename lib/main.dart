@@ -13,63 +13,67 @@ import 'app/modules/auth/auth_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // ---------------------------------------------------------
   // 1. INISIALISASI SERVICE (DATABASE & LOCAL STORAGE)
   // ---------------------------------------------------------
 
-  await Get.putAsync<LocalStorageService>(() async { 
+  await Get.putAsync<LocalStorageService>(() async {
     final service = LocalStorageService();
-    await service.init(); 
+    await service.init();
     return service;
   });
 
   await Get.putAsync<SupabaseProvider>(() async {
     final provider = SupabaseProvider();
-    await provider.init(); 
+    await provider.init();
     return provider;
   });
-  
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key}); 
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Ambil service untuk cek theme & status login
     final LocalStorageService localStorage = Get.find<LocalStorageService>();
-    
+
     return GetMaterialApp(
       title: "Muktijaya1 - Packaging Kardus",
       debugShowCheckedModeBanner: false,
-    
-      themeMode: localStorage.getThemeMode(), 
+
+      themeMode: localStorage.getThemeMode(),
       theme: ThemeData(
-        primarySwatch: Colors.brown, 
+        primarySwatch: Colors.brown,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.brown, 
+          backgroundColor: Colors.brown,
           foregroundColor: Colors.white,
         ),
       ),
-      darkTheme: ThemeData.dark(), 
-      
-      initialRoute: "/login", 
-      
-      getPages: [
+      darkTheme: ThemeData.dark(),
 
+      // --- LOGIC SESSION DISINI ---
+      // Jika isLoggedIn() true -> Masuk ke Katalog (Home)
+      // Jika false -> Masuk ke Login
+      initialRoute: localStorage.isLoggedIn() ? "/katalog" : "/login",
+
+      // ----------------------------
+      getPages: [
         GetPage(
-          name: "/login", 
+          name: "/login",
           page: () => const AuthView(),
           binding: AuthBinding(),
         ),
-        
+
         GetPage(
           name: "/katalog",
           page: () => const KatalogView(),
           binding: KatalogBinding(),
         ),
-        
+
         GetPage(
           name: "/keranjang",
           page: () => const KeranjangView(),

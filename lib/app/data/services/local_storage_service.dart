@@ -1,31 +1,30 @@
-// lib/app/data/services/local_storage_service.dart
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter/material.dart'; 
-import '../models/cart_model.dart'; 
-
+import 'package:flutter/material.dart';
+import '../models/cart_model.dart';
 
 class LocalStorageService {
-  SharedPreferences? prefs; 
-  Box<CartItemModel>? cartBox; 
-  
+  SharedPreferences? prefs;
+  Box<CartItemModel>? cartBox;
+
   static const String kThemeKey = 'app_theme';
+  static const String _isLoginKey = 'is_login';
+  static const String _tokenKey = 'auth_token';
 
   Future<void> init() async {
     prefs = await SharedPreferences.getInstance();
 
     await Hive.initFlutter();
-    
-    if (!Hive.isAdapterRegistered(0)) { 
-        Hive.registerAdapter(CartItemModelAdapter()); 
+
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(CartItemModelAdapter());
     }
 
-    cartBox = await Hive.openBox<CartItemModel>('cartBox'); 
+    cartBox = await Hive.openBox<CartItemModel>('cartBox');
   }
 
   ThemeMode getThemeMode() {
-    final themeIndex = prefs?.getInt(kThemeKey); 
+    final themeIndex = prefs?.getInt(kThemeKey);
     if (themeIndex == 1) {
       return ThemeMode.light;
     }
@@ -39,13 +38,29 @@ class LocalStorageService {
     int index;
     if (mode == ThemeMode.light) {
       index = 1;
-    }
-    else if (mode == ThemeMode.dark) {
+    } else if (mode == ThemeMode.dark) {
       index = 2;
-    }
-    else {
+    } else {
       index = 0;
     }
-    await prefs?.setInt(kThemeKey, index); 
+    await prefs?.setInt(kThemeKey, index);
+  }
+
+  Future<void> saveSession(String token) async {
+    await prefs?.setBool(_isLoginKey, true);
+    await prefs?.setString(_tokenKey, token);
+  }
+
+  bool isLoggedIn() {
+    return prefs?.getBool(_isLoginKey) ?? false;
+  }
+
+  String? getToken() {
+    return prefs?.getString(_tokenKey);
+  }
+
+  Future<void> removeSession() async {
+    await prefs?.remove(_isLoginKey);
+    await prefs?.remove(_tokenKey);
   }
 }
