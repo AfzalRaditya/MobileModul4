@@ -10,6 +10,8 @@ import 'app/modules/keranjang/keranjang_binding.dart';
 import 'app/modules/keranjang/keranjang_view.dart';
 import 'app/modules/auth/auth_binding.dart';
 import 'app/modules/auth/auth_view.dart';
+// --- 1. IMPORT REGISTER VIEW (Ditambahkan) ---
+import 'app/modules/auth/register_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +68,13 @@ class MyApp extends StatelessWidget {
           name: "/login",
           page: () => const AuthView(),
           binding: AuthBinding(),
+        ),
+
+        // --- 2. ROUTE REGISTER (Ditambahkan) ---
+        GetPage(
+          name: "/register",
+          page: () => const RegisterView(),
+          binding: AuthBinding(), // Tetap pakai AuthBinding
         ),
 
         GetPage(

@@ -42,6 +42,7 @@ class AuthController extends GetxController {
     }
   }
 
+  // --- FUNGSI LOGIN ---
   Future<void> signIn(String email, String password) async {
     isLoading.value = true;
     try {
@@ -50,7 +51,6 @@ class AuthController extends GetxController {
 
       if (response.session != null) {
         // --- SIMPAN SESSION LOKAL ---
-        // Kita simpan access token dari Supabase ke Shared Preferences
         await _localStorage.saveSession(response.session!.accessToken);
 
         Get.offAllNamed("/katalog");
@@ -72,6 +72,28 @@ class AuthController extends GetxController {
     }
   }
 
+  // --- FUNGSI REGISTER (DITAMBAHKAN) ---
+  Future<void> signUp(String email, String password) async {
+    isLoading.value = true;
+    try {
+      // Kirim data pendaftaran ke Supabase
+      await _supabaseClient.auth.signUp(email: email, password: password);
+
+      // Jika berhasil, beri notifikasi dan arahkan ke login
+      Get.snackbar("Berhasil Daftar", "Akun berhasil dibuat. Silakan Login.");
+
+      // Balik ke halaman Login
+      Get.offNamed("/login");
+    } on AuthException catch (e) {
+      Get.snackbar("Gagal Daftar", e.message);
+    } catch (e) {
+      Get.snackbar("Error", "Terjadi kesalahan: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // --- FUNGSI LOGOUT ---
   Future<void> signOut() async {
     isLoading.value = true;
     try {
