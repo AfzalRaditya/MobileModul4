@@ -32,7 +32,7 @@ dependencies:
     sdk: flutter
   get: ^4.6.5
   dio: ^5.3.3 # Untuk API Call utama
-  http: ^1.1.0 # Untuk eksperimen perbandingan
+  http: ^1.6.0 # Upgrade supaya kompatibel dengan flutter_map ^5
   shared_preferences: ^2.2.2
   hive: ^2.2.3
   hive_flutter: ^1.1.0
@@ -40,6 +40,12 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  geolocator: ^9.0.2
+  flutter_map: ^5.0.0
+  latlong2: ^0.9.0
+  intl: ^0.18.1
+
+ # no dependency_overrides
 
 dev_dependencies:
   flutter_test:

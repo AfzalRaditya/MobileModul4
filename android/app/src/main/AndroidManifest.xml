@@ -1,4 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Location permissions required by the app. These must be declared so
+        the system can grant runtime permissions and the geolocator plugin
+        can function. If you need background location tracking, also add
+        ACCESS_BACKGROUND_LOCATION (and follow Play Store policy). -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Uncomment if you need background location (Android 10+). Be careful
+        with Play Store requirements before enabling background location. -->
+    <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
     <application
         android:label="demo4"
         android:name="${applicationName}"

@@ -1,11 +1,14 @@
 // lib/app/modules/katalog/katalog_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'katalog_controller.dart';
 import 'rotating_logo.dart';
 import 'product_card.dart';
 import '../keranjang/keranjang_controller.dart';
+import '../location/bindings/location_binding.dart';
+import '../location/views/location_view.dart';
 
 class KatalogView extends GetView<KatalogController> {
   const KatalogView({super.key});
@@ -80,6 +83,20 @@ class KatalogView extends GetView<KatalogController> {
             },
           );
         }),
+        // Tombol lokasi (floating) untuk membuka halaman Location
+        floatingActionButton: FloatingActionButton.extended(
+          heroTag: 'katalog_get_location',
+          icon: const Icon(Icons.my_location),
+          label: const Text('Lokasi'),
+          onPressed: () {
+            try {
+              // Buka halaman Location dan pastikan binding dijalankan
+              Get.to(() => const LocationView(), binding: LocationBinding());
+            } catch (e) {
+              if (kDebugMode) print('Error membuka LocationView: $e');
+            }
+          },
+        ),
       ),
     );
   }
