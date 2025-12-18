@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'app/data/services/notification_service.dart';
 import 'app/modules/notifications/notification_binding.dart';
 import 'app/modules/notifications/notification_view.dart';
@@ -16,9 +17,12 @@ import 'app/modules/auth/auth_binding.dart';
 import 'app/modules/auth/auth_view.dart';
 // --- 1. IMPORT REGISTER VIEW (Ditambahkan) ---
 import 'app/modules/auth/register_view.dart';
+import 'firebase_messaging_background.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Daftarkan handler background SEBELUM Firebase.initializeApp
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   // Initialize Firebase (requires google-services.json / GoogleService-Info.plist)
   await Firebase.initializeApp();
 

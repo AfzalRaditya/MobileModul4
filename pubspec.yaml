@@ -46,8 +46,8 @@ dependencies:
   intl: ^0.18.1
   firebase_core: ^2.8.0
   firebase_messaging: ^14.6.0
-  # Use a 12.x version of flutter_local_notifications to avoid AGP namespace issue
-  flutter_local_notifications: ^12.0.4
+  # Upgrade to fix AGP 8 manifest namespace and linux plugin reference issues
+  flutter_local_notifications: ^17.2.2
 
  # no dependency_overrides
 

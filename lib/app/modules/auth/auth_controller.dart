@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../../data/providers/supabase_provider.dart';
 import '../../data/services/local_storage_service.dart'; // Import service lokal
+import '../../data/services/notification_service.dart';
 import '../keranjang/keranjang_controller.dart';
 
 class AuthController extends GetxController {
@@ -52,6 +53,17 @@ class AuthController extends GetxController {
       if (response.session != null) {
         // --- SIMPAN SESSION LOKAL ---
         await _localStorage.saveSession(response.session!.accessToken);
+
+        // Tampilkan popup notifikasi dengan suara kustom
+        await NotificationService().showLocal(
+          title: 'Login Berhasil',
+          body:
+              'Selamat datang, ${response.user?.email ?? 'pengguna'}! Pesanan siap dibantu.',
+          data: {'route': '/katalog', 'arguments': null},
+        );
+
+        // Delay agar suara notifikasi sempat keluar sebelum navigasi
+        await Future.delayed(const Duration(milliseconds: 800));
 
         Get.offAllNamed("/katalog");
         Get.snackbar(
