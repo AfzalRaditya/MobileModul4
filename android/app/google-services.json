@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "472091994636",
+    "project_id": "kelmobilefinal",
+    "storage_bucket": "kelmobilefinal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:472091994636:android:5d47b11ba75cb560859c29",
+        "android_client_info": {
+          "package_name": "com.kelompokmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHUlb_N5ykVVIdFI-wsYB6r2q0U4rFiBE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -449,7 +449,7 @@ class GpsLocationView extends StatelessWidget {
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withAlpha(76),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),

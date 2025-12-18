@@ -2,6 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'app/data/services/notification_service.dart';
+import 'app/modules/notifications/notification_binding.dart';
+import 'app/modules/notifications/notification_view.dart';
 import 'app/data/services/local_storage_service.dart';
 import 'app/data/providers/supabase_provider.dart';
 import 'app/modules/katalog/katalog_binding.dart';
@@ -15,6 +19,11 @@ import 'app/modules/auth/register_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Firebase (requires google-services.json / GoogleService-Info.plist)
+  await Firebase.initializeApp();
+
+  // Initialize notification service (FCM + local notifications)
+  await NotificationService().init();
 
   // ---------------------------------------------------------
   // 1. INISIALISASI SERVICE (DATABASE & LOCAL STORAGE)
@@ -87,6 +96,12 @@ class MyApp extends StatelessWidget {
           name: "/keranjang",
           page: () => const KeranjangView(),
           binding: KeranjangBinding(),
+        ),
+        // Notifications route (so we can navigate by name from background/terminated)
+        GetPage(
+          name: "/notifications",
+          page: () => const NotificationView(),
+          binding: NotificationBinding(),
         ),
       ],
     );

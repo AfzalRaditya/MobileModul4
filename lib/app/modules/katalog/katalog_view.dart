@@ -9,6 +9,9 @@ import 'product_card.dart';
 import '../keranjang/keranjang_controller.dart';
 import '../location/bindings/location_binding.dart';
 import '../location/views/location_view.dart';
+import '../notifications/notification_binding.dart';
+import '../notifications/notification_view.dart';
+import '../notifications/notification_controller.dart';
 
 class KatalogView extends GetView<KatalogController> {
   const KatalogView({super.key});
@@ -45,6 +48,48 @@ class KatalogView extends GetView<KatalogController> {
               icon: const Icon(Icons.speed),
               onPressed: controller.runHttpComparison,
             ),
+
+            // 4. Tombol Notifikasi (badge)
+            Obx(() {
+              final notifCtrl = Get.find<NotificationController>();
+              final unread = notifCtrl.unreadCount;
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none),
+                    onPressed: () => Get.to(
+                      () => const NotificationView(),
+                      binding: NotificationBinding(),
+                    ),
+                  ),
+                  if (unread > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 20,
+                        ),
+                        child: Text(
+                          unread > 99 ? '99+' : '$unread',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            }),
 
             // --- 4. TOMBOL LOGOUT (BARU) ---
             IconButton(

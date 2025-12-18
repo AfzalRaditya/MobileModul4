@@ -6,13 +6,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.demo4"
+    namespace = "com.kelompokmobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // Enable core library desugaring required by some AARs (e.g., flutter_local_notifications)
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -21,7 +23,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.demo4"
+    applicationId = "com.kelompokmobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -41,4 +43,12 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// Apply Google Services plugin to enable reading android/app/google-services.json
+apply(plugin = "com.google.gms.google-services")
+
+// Add core library desugaring dependency
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }

@@ -44,6 +44,10 @@ dependencies:
   flutter_map: ^5.0.0
   latlong2: ^0.9.0
   intl: ^0.18.1
+  firebase_core: ^2.8.0
+  firebase_messaging: ^14.6.0
+  # Use a 12.x version of flutter_local_notifications to avoid AGP namespace issue
+  flutter_local_notifications: ^12.0.4
 
  # no dependency_overrides
 
@@ -70,6 +74,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/sounds/custom_notification.wav
 
   # To add assets to your application, add an assets section, like this:
   # assets:
