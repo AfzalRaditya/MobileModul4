@@ -12,106 +12,184 @@ class AuthView extends StatelessWidget {
     return GetBuilder<AuthController>(
       init: Get.find<AuthController>(),
       builder: (controller) {
+        final scheme = Theme.of(context).colorScheme;
         final emailController = TextEditingController();
         final passwordController = TextEditingController();
 
         return Scaffold(
-          appBar: AppBar(title: const Text("Login Supabase")),
-          body: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // --- IKON TAMBAHAN BIAR KELIATAN BEDA ---
-                  const Icon(Icons.lock_person, size: 80, color: Colors.brown),
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Masuk Aplikasi",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Input Email
-                  TextField(
-                    controller: emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 15),
-
-                  // Input Password
-                  TextField(
-                    controller: passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock),
-                    ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Tombol Login
-                  Obx(
-                    () => SizedBox(
-                      width: double.infinity, // Tombol Login Lebar Full
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: controller.isLoading.value
-                            ? null
-                            : () {
-                                controller.signIn(
-                                  emailController.text.trim(),
-                                  passwordController.text.trim(),
-                                );
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.brown,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: Text(
-                          controller.isLoading.value ? 'Loading...' : 'LOGIN',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // --- BAGIAN REGISTER (SAYA BUAT MENCOLOK) ---
-                  const SizedBox(height: 30),
-                  const Divider(), // Garis pemisah
-                  const SizedBox(height: 10),
-                  const Text("Belum punya akun?"),
-
-                  TextButton(
-                    onPressed: () {
-                      print(
-                        "Tombol Daftar Ditekan!",
-                      ); // Cek di terminal kalau diklik
-                      Get.toNamed("/register");
-                    },
-                    child: const Text(
-                      "DAFTAR DISINI SEKARANG",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.brown, // Warna teks coklat biar kelihatan
-                        decoration: TextDecoration.underline, // Garis bawah
-                      ),
-                    ),
-                  ),
-                  // -------------------------------------------
-                ],
+          // Tampilan mengikuti desain screenshot: background gradient + kartu pusat
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [scheme.primary, scheme.tertiary],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+            ),
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 380),
+                  child: Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 24,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: scheme.surfaceContainerHighest,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.inventory_2,
+                              color: scheme.primary,
+                              size: 32,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Muktijaya1',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Enter your email to access your dashboard',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: scheme.onSurfaceVariant),
+                          ),
+                          const SizedBox(height: 16),
+
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Email',
+                              style: TextStyle(
+                                color: scheme.onSurface,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextField(
+                            controller: emailController,
+                            decoration: InputDecoration(
+                              hintText: 'm@example.com',
+                              filled: true,
+                              fillColor: scheme.surfaceContainerHighest,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(Icons.email_outlined),
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          const SizedBox(height: 12),
+
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Password',
+                              style: TextStyle(
+                                color: scheme.onSurface,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextField(
+                            controller: passwordController,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: scheme.surfaceContainerHighest,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(Icons.lock_outline),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          Obx(
+                            () => SizedBox(
+                              width: double.infinity,
+                              height: 44,
+                              child: ElevatedButton(
+                                onPressed: controller.isLoading.value
+                                    ? null
+                                    : () {
+                                        controller.signIn(
+                                          emailController.text.trim(),
+                                          passwordController.text.trim(),
+                                        );
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: scheme.primary,
+                                  foregroundColor: scheme.onPrimary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(
+                                  controller.isLoading.value
+                                      ? 'Loading...'
+                                      : 'Sign in',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Belum punya akun? ',
+                                style: TextStyle(color: scheme.onSurfaceVariant),
+                              ),
+                              TextButton(
+                                onPressed: () => Get.toNamed('/register'),
+                                child: Text(
+                                  'Register',
+                                  style: TextStyle(color: scheme.primary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              '© 2024 Muktijaya1. All rights reserved.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: scheme.onPrimary.withAlpha(200)),
             ),
           ),
         );

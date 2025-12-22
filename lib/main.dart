@@ -18,6 +18,17 @@ import 'app/modules/auth/auth_view.dart';
 // --- 1. IMPORT REGISTER VIEW (Ditambahkan) ---
 import 'app/modules/auth/register_view.dart';
 import 'firebase_messaging_background.dart';
+// Additional views to match new UI flows
+import 'app/modules/checkout/checkout_view.dart';
+import 'app/modules/profile/profile_view.dart';
+import 'app/modules/checkout/order_confirmed_view.dart';
+import 'app/modules/orders/orders_view.dart';
+import 'app/modules/location/views/location_picker_view.dart';
+import 'app/shared/app_theme_controller.dart';
+import 'app/modules/settings/settings_view.dart';
+import 'app/modules/settings/personal_details_view.dart';
+import 'app/modules/settings/saved_addresses_view.dart';
+import 'app/modules/settings/help_support_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +56,9 @@ Future<void> main() async {
     return provider;
   });
 
+  // Theme controller (reactive theme switching via Settings)
+  Get.put(AppThemeController());
+
   runApp(const MyApp());
 }
 
@@ -55,59 +69,113 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // Ambil service untuk cek theme & status login
     final LocalStorageService localStorage = Get.find<LocalStorageService>();
+    final theme = Get.find<AppThemeController>();
 
-    return GetMaterialApp(
-      title: "Muktijaya1 - Packaging Kardus",
-      debugShowCheckedModeBanner: false,
+    return Obx(
+      () => GetMaterialApp(
+        title: "Muktijaya1 - Packaging Kardus",
+        debugShowCheckedModeBanner: false,
 
-      themeMode: localStorage.getThemeMode(),
-      theme: ThemeData(
-        primarySwatch: Colors.brown,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.brown,
-          foregroundColor: Colors.white,
+        themeMode: theme.themeMode.value,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.brown,
+            brightness: Brightness.light,
+          ),
         ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.brown,
+            brightness: Brightness.dark,
+          ),
+        ),
+
+        // --- LOGIC SESSION DISINI ---
+        // Jika isLoggedIn() true -> Masuk ke Katalog (Home)
+        // Jika false -> Masuk ke Login
+        initialRoute: localStorage.isLoggedIn() ? "/katalog" : "/login",
+
+        // ----------------------------
+        getPages: [
+          GetPage(
+            name: "/login",
+            page: () => const AuthView(),
+            binding: AuthBinding(),
+          ),
+
+          // --- 2. ROUTE REGISTER (Ditambahkan) ---
+          GetPage(
+            name: "/register",
+            page: () => const RegisterView(),
+            binding: AuthBinding(), // Tetap pakai AuthBinding
+          ),
+
+          GetPage(
+            name: "/katalog",
+            page: () => const KatalogView(),
+            binding: KatalogBinding(),
+          ),
+
+          GetPage(
+            name: "/orders",
+            page: () => const OrdersView(),
+          ),
+
+          GetPage(
+            name: "/keranjang",
+            page: () => const KeranjangView(),
+            binding: KeranjangBinding(),
+          ),
+          // Checkout view (new)
+          GetPage(
+            name: "/checkout",
+            page: () => const CheckoutView(),
+            // reuse KeranjangBinding if needed or none
+          ),
+          // Profile view (new)
+          GetPage(
+            name: "/profile",
+            page: () => const ProfileView(),
+            // can reuse AuthBinding to access auth controller if needed
+            binding: AuthBinding(),
+          ),
+
+          GetPage(
+            name: "/settings",
+            page: () => const SettingsView(),
+          ),
+          GetPage(
+            name: "/personal-details",
+            page: () => const PersonalDetailsView(),
+          ),
+          GetPage(
+            name: "/saved-addresses",
+            page: () => const SavedAddressesView(),
+          ),
+          GetPage(
+            name: "/help-support",
+            page: () => const HelpSupportView(),
+          ),
+
+          GetPage(
+            name: "/location-picker",
+            page: () => const LocationPickerView(),
+          ),
+          // Order confirmed view (new)
+          GetPage(
+            name: "/order-confirmed",
+            page: () => const OrderConfirmedView(),
+          ),
+          // Notifications route (so we can navigate by name from background/terminated)
+          GetPage(
+            name: "/notifications",
+            page: () => const NotificationView(),
+            binding: NotificationBinding(),
+          ),
+        ],
       ),
-      darkTheme: ThemeData.dark(),
-
-      // --- LOGIC SESSION DISINI ---
-      // Jika isLoggedIn() true -> Masuk ke Katalog (Home)
-      // Jika false -> Masuk ke Login
-      initialRoute: localStorage.isLoggedIn() ? "/katalog" : "/login",
-
-      // ----------------------------
-      getPages: [
-        GetPage(
-          name: "/login",
-          page: () => const AuthView(),
-          binding: AuthBinding(),
-        ),
-
-        // --- 2. ROUTE REGISTER (Ditambahkan) ---
-        GetPage(
-          name: "/register",
-          page: () => const RegisterView(),
-          binding: AuthBinding(), // Tetap pakai AuthBinding
-        ),
-
-        GetPage(
-          name: "/katalog",
-          page: () => const KatalogView(),
-          binding: KatalogBinding(),
-        ),
-
-        GetPage(
-          name: "/keranjang",
-          page: () => const KeranjangView(),
-          binding: KeranjangBinding(),
-        ),
-        // Notifications route (so we can navigate by name from background/terminated)
-        GetPage(
-          name: "/notifications",
-          page: () => const NotificationView(),
-          binding: NotificationBinding(),
-        ),
-      ],
     );
   }
 }

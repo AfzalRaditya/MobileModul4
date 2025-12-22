@@ -1,17 +1,16 @@
 // lib/app/modules/katalog/katalog_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+
 import 'katalog_controller.dart';
 import 'rotating_logo.dart';
 import 'product_card.dart';
 import '../keranjang/keranjang_controller.dart';
-import '../location/bindings/location_binding.dart';
-import '../location/views/location_view.dart';
 import '../notifications/notification_binding.dart';
 import '../notifications/notification_view.dart';
 import '../notifications/notification_controller.dart';
+import '../../shared/app_bottom_nav.dart';
 
 class KatalogView extends GetView<KatalogController> {
   const KatalogView({super.key});
@@ -21,128 +20,189 @@ class KatalogView extends GetView<KatalogController> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final int crossAxisCount = screenWidth > 600 ? 3 : 2;
 
-    return Obx(
-      () => Scaffold(
-        appBar: AppBar(
-          title: const Text("Katalog Kardus Muktijaya1"),
-          actions: [
-            // 1. Tombol Ganti Tema
-            IconButton(
-              icon: Icon(
-                controller.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
-              ),
-              onPressed: controller.toggleTheme,
-            ),
-
-            // 2. Tombol Keranjang
-            IconButton(
-              icon: const Icon(Icons.shopping_cart),
-              onPressed: () => Get.toNamed("/keranjang"),
-            ),
-
-            // 3. Tombol Cek Speed (Optional)
-            IconButton(
-              icon: const Icon(Icons.speed),
-              onPressed: controller.runHttpComparison,
-            ),
-
-            // 4. Tombol Notifikasi (badge)
-            Obx(() {
-              final notifCtrl = Get.find<NotificationController>();
-              final unread = notifCtrl.unreadCount;
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none),
-                    onPressed: () => Get.to(
-                      () => const NotificationView(),
-                      binding: NotificationBinding(),
-                    ),
-                  ),
-                  if (unread > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 20,
-                          minHeight: 20,
-                        ),
-                        child: Text(
-                          unread > 99 ? '99+' : '$unread',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            }),
-
-            // --- 4. TOMBOL LOGOUT (BARU) ---
-            IconButton(
-              icon: const Icon(
-                Icons.logout,
-                color: Colors.redAccent,
-              ), // Saya kasih warna merah biar beda
-              tooltip: "Logout",
-              onPressed: () {
-                // Panggil fungsi logout dari controller
-                controller.logout();
-              },
-            ),
-          ],
-        ),
-        body: Obx(() {
+    return Scaffold(
+      body: Obx(() {
           if (controller.isLoading.value) {
             return Center(child: RotatingLogo());
           }
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(10),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 0.7,
-            ),
-            itemCount: controller.produkList.length,
-            itemBuilder: (context, index) {
-              final produk = controller.produkList[index];
-              return ProductCard(
-                produk: produk,
-                onBuy: () => keranjangController.addToLocalCart(produk),
-              );
-            },
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [scheme.primary, scheme.tertiary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.inventory_2, color: scheme.onPrimary),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Muktijaya1',
+                                style: TextStyle(
+                                  color: scheme.onPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.shopping_cart,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () => Get.toNamed('/keranjang'),
+                              ),
+                              Obx(() {
+                                final notifCtrl =
+                                    Get.find<NotificationController>();
+                                final unread = notifCtrl.unreadCount;
+                                return Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.notifications_none,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: () => Get.to(
+                                        () => const NotificationView(),
+                                        binding: NotificationBinding(),
+                                      ),
+                                    ),
+                                    if (unread > 0)
+                                      Positioned(
+                                        right: 8,
+                                        top: 8,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 18,
+                                            minHeight: 18,
+                                          ),
+                                          child: Text(
+                                            unread > 99 ? '99+' : '$unread',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              }),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.logout,
+                                  color: Colors.white,
+                                ),
+                                tooltip: 'Logout',
+                                onPressed: controller.logout,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Welcome to Muktijaya1',
+                        style: TextStyle(
+                          color: scheme.onPrimary,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Your one-stop solution for premium packaging materials. High quality, durable, and eco-friendly options available.',
+                        style: TextStyle(color: scheme.onPrimary.withAlpha(220)),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Search products...',
+                                filled: true,
+                                fillColor: scheme.surface,
+                                prefixIcon: const Icon(Icons.search),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.filter_list),
+                            label: const Text('All'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: scheme.surface,
+                              foregroundColor: scheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.all(10),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 0.7,
+                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final produk = controller.produkList[index];
+                    return ProductCard(
+                      produk: produk,
+                      onBuy: () => keranjangController.addToLocalCart(produk),
+                    );
+                  }, childCount: controller.produkList.length),
+                ),
+              ),
+            ],
           );
-        }),
-        // Tombol lokasi (floating) untuk membuka halaman Location
-        floatingActionButton: FloatingActionButton.extended(
-          heroTag: 'katalog_get_location',
-          icon: const Icon(Icons.my_location),
-          label: const Text('Lokasi'),
-          onPressed: () {
-            try {
-              // Buka halaman Location dan pastikan binding dijalankan
-              Get.to(() => const LocationView(), binding: LocationBinding());
-            } catch (e) {
-              if (kDebugMode) print('Error membuka LocationView: $e');
-            }
-          },
-        ),
-      ),
+      }),
+      // Bottom nav sesuai screenshot (Home/Orders/Profile)
+      bottomNavigationBar: const AppBottomNav(current: AppTab.home),
     );
   }
 }

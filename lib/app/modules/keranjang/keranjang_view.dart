@@ -3,121 +3,182 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'keranjang_controller.dart';
+import '../../shared/formatters.dart';
 
 class KeranjangView extends GetView<KeranjangController> {
   const KeranjangView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Keranjang & Sinkronisasi CRUD'),
-      ),
+      appBar: AppBar(title: const Text('Shopping Cart')),
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Obx(() => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  
-                  // =========================================================
-                  // 1. DATA LOKAL (HIVE) - CRUD IMPLEMENTATION
-                  // =========================================================
-                  const Text('🛒 Data Lokal (Hive) - Keranjang Aktif (CRUD)', 
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const Divider(),
-                  
-                  ...controller.itemsLokal.map((item) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(item.productName),
-                    subtitle: Text('Rp ${item.price.toStringAsFixed(0)}'),
-                    
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-
-                        IconButton(
-                          icon: const Icon(Icons.remove_circle_outline, size: 20, color: Colors.red),
-                          onPressed: () => controller.updateLocalQuantity(item.productId, item.quantity - 1), 
-                        ),
-                        
-                        SizedBox(width: 24, child: Text('${item.quantity}', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
-                        
-                        IconButton(
-                          icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.green),
-                          onPressed: () => controller.updateLocalQuantity(item.productId, item.quantity + 1),
-                        ),
-                        
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.grey),
-                          onPressed: () => controller.deleteLocalItem(item.productId),
-                        ),
-                      ],
+            child: Obx(() {
+              if (controller.itemsLokal.isEmpty) {
+                return const Center(child: Text('Keranjang kosong'));
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.all(12),
+                itemCount: controller.itemsLokal.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, i) {
+                  final item = controller.itemsLokal[i];
+                  return Card(
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.inventory_2_outlined),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.productName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  formatIdr(item.price),
+                                  style: TextStyle(color: scheme.primary),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.remove),
+                                      onPressed: () =>
+                                          controller.updateLocalQuantity(
+                                            item.productId,
+                                            item.quantity - 1,
+                                          ),
+                                    ),
+                                    Container(
+                                      width: 36,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        '${item.quantity}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () =>
+                                          controller.updateLocalQuantity(
+                                            item.productId,
+                                            item.quantity + 1,
+                                          ),
+                                    ),
+                                    const Spacer(),
+                                    TextButton(
+                                      onPressed: () => controller
+                                          .deleteLocalItem(item.productId),
+                                      child: const Text(
+                                        'Remove',
+                                        style: TextStyle(
+                                          color: Colors.redAccent,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  )),
-                  
-                  const SizedBox(height: 10),
-                  const Divider(thickness: 2),
-                  
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("TOTAL LOKAL:", style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text("Rp ${controller.totalHarga.toStringAsFixed(0)}", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.brown)),
-                    ],
-                  ),
-
-                  const SizedBox(height: 30),
-                  
-                  // =========================================================
-                  // 2. DATA CLOUD (SUPABASE) - READ & DELETE
-                  // =========================================================
-                  const Text('☁️ Data Cloud (Supabase) - Hasil Sinkron', 
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const Divider(),
-
-                 
-                  ...controller.itemsCloud.map((item) => ListTile(
-                    title: Text(item.productName),
-                    subtitle: Text('Kuantitas: ${item.quantity} | Total: Rp ${(item.price * item.quantity).toStringAsFixed(0)}'),
-                    
-                    trailing: IconButton(
-                      icon: const Icon(Icons.cloud_off, color: Colors.blueGrey),
-                      onPressed: () => controller.deleteCloudItem(item.productId), 
-                    ),
-                  )),
-                ],
-              )),
-            ),
+                  );
+                },
+              );
+            }),
           ),
-          
           Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)],
+              color: scheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: scheme.shadow.withAlpha(40),
+                  blurRadius: 6,
+                  offset: const Offset(0, -2),
+                ),
+              ],
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                
-                ElevatedButton(
-                  onPressed: controller.syncLocalToCloud,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                    backgroundColor: Colors.brown,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('➡️ SINKRONKAN LOKAL KE CLOUD (UPSERT)'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    Obx(
+                      () => Text(
+                        formatIdr(controller.totalHarga),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                
-                ElevatedButton.icon(
-                  onPressed: controller.fetchCloudCart,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Muat Ulang Data Cloud'),
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 40), foregroundColor: Colors.black54),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: () => Get.toNamed('/checkout'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: scheme.primary,
+                      foregroundColor: scheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Checkout Now'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Aksi sinkronisasi tetap tersedia di bawah
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: controller.fetchCloudCart,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Reload Cloud'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: controller.syncLocalToCloud,
+                        child: const Text('Sync to Cloud (Upsert)'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

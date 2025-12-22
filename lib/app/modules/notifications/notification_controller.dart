@@ -4,7 +4,7 @@ import 'notification_model.dart';
 class NotificationController extends GetxController {
   final RxList<NotificationItem> _items = <NotificationItem>[].obs;
 
-  List<NotificationItem> get items => _items;
+  RxList<NotificationItem> get items => _items;
 
   int get unreadCount => _items.where((e) => !e.read).length;
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -50,7 +51,7 @@ class NotificationService {
       final token = await _fcm.getToken();
       _lastToken = token;
       // Print and log so it's visible both in flutter run console and device logs
-      print('FCM token: $token');
+      debugPrint('FCM token: $token');
       developer.log('FCM token: $token');
       // Subscribe this device to a development topic for easy testing from Firebase Console
       try {
@@ -61,7 +62,7 @@ class NotificationService {
       }
     } catch (e) {
       developer.log('Error retrieving FCM token: $e');
-      print('Error retrieving FCM token: $e');
+      debugPrint('Error retrieving FCM token: $e');
     }
 
     // Initialize local notifications
