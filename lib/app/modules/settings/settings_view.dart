@@ -37,29 +37,10 @@ class SettingsView extends StatelessWidget {
           const SizedBox(height: 8),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.person_outline),
-              title: const Text('Personal Details'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Get.toNamed('/personal-details'),
-            ),
-          ),
-          Card(
-            child: ListTile(
               leading: const Icon(Icons.location_on_outlined),
               title: const Text('Saved Addresses'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Get.toNamed('/saved-addresses'),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Support', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.help_outline),
-              title: const Text('Help & Support'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Get.toNamed('/help-support'),
             ),
           ),
         ],

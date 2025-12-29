@@ -39,6 +39,10 @@ class ProductCard extends StatelessWidget {
                     size: 48,
                   ),
                 ),
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+                },
               ),
             ),
             Expanded(

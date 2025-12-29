@@ -7,9 +7,6 @@ import 'katalog_controller.dart';
 import 'rotating_logo.dart';
 import 'product_card.dart';
 import '../keranjang/keranjang_controller.dart';
-import '../notifications/notification_binding.dart';
-import '../notifications/notification_view.dart';
-import '../notifications/notification_controller.dart';
 import '../../shared/app_bottom_nav.dart';
 
 class KatalogView extends GetView<KatalogController> {
@@ -30,8 +27,10 @@ class KatalogView extends GetView<KatalogController> {
             return Center(child: RotatingLogo());
           }
 
-          return CustomScrollView(
-            slivers: [
+          return RefreshIndicator(
+            onRefresh: controller.refreshKatalog,
+            child: CustomScrollView(
+              slivers: [
               SliverToBoxAdapter(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -53,7 +52,14 @@ class KatalogView extends GetView<KatalogController> {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.inventory_2, color: scheme.onPrimary),
+                              Image.asset(
+                                'assets/images/logo.png',
+                                width: 24,
+                                height: 24,
+                                color: scheme.onPrimary,
+                                errorBuilder: (context, error, stack) =>
+                                    Icon(Icons.inventory_2, color: scheme.onPrimary),
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'Muktijaya1',
@@ -74,50 +80,6 @@ class KatalogView extends GetView<KatalogController> {
                                 ),
                                 onPressed: () => Get.toNamed('/keranjang'),
                               ),
-                              Obx(() {
-                                final notifCtrl =
-                                    Get.find<NotificationController>();
-                                final unread = notifCtrl.unreadCount;
-                                return Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.notifications_none,
-                                        color: Colors.white,
-                                      ),
-                                      onPressed: () => Get.to(
-                                        () => const NotificationView(),
-                                        binding: NotificationBinding(),
-                                      ),
-                                    ),
-                                    if (unread > 0)
-                                      Positioned(
-                                        right: 8,
-                                        top: 8,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.red,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          constraints: const BoxConstraints(
-                                            minWidth: 18,
-                                            minHeight: 18,
-                                          ),
-                                          child: Text(
-                                            unread > 99 ? '99+' : '$unread',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                );
-                              }),
                               IconButton(
                                 icon: const Icon(
                                   Icons.logout,
@@ -145,60 +107,86 @@ class KatalogView extends GetView<KatalogController> {
                         style: TextStyle(color: scheme.onPrimary.withAlpha(220)),
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Search products...',
-                                filled: true,
-                                fillColor: scheme.surface,
-                                prefixIcon: const Icon(Icons.search),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
+                      TextField(
+                        controller: controller.searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Cari produk...',
+                          filled: true,
+                          fillColor: scheme.surface,
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: controller.clearSearch,
+                              )
+                            : const SizedBox.shrink()),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: const Icon(Icons.filter_list),
-                            label: const Text('All'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: scheme.surface,
-                              foregroundColor: scheme.primary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
+                        onChanged: controller.setSearch,
                       ),
                     ],
                   ),
                 ),
               ),
-              SliverPadding(
-                padding: const EdgeInsets.all(10),
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 0.7,
+              // Jika hasil pencarian kosong, tampilkan pesan
+              Obx(() {
+                final filtered = controller.filteredProduk;
+                if (filtered.isEmpty && controller.searchQuery.value.isNotEmpty) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: scheme.onSurfaceVariant.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Produk tidak ditemukan',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Coba kata kunci lain',
+                            style: TextStyle(
+                              color: scheme.onSurfaceVariant.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(10),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.7,
+                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final produk = filtered[index];
+                      return ProductCard(
+                        produk: produk,
+                        onBuy: () => keranjangController.addToLocalCart(produk),
+                      );
+                    }, childCount: filtered.length),
                   ),
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final produk = controller.produkList[index];
-                    return ProductCard(
-                      produk: produk,
-                      onBuy: () => keranjangController.addToLocalCart(produk),
-                    );
-                  }, childCount: controller.produkList.length),
-                ),
-              ),
+                );
+              }),
             ],
+            ),
           );
       }),
       // Bottom nav sesuai screenshot (Home/Orders/Profile)

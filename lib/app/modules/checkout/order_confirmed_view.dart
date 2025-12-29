@@ -15,6 +15,7 @@ class OrderConfirmedView extends StatelessWidget {
     final args = Get.arguments is Map<String, dynamic>
         ? Get.arguments as Map<String, dynamic>
         : <String, dynamic>{};
+    final String? orderId = args['orderId'] as String?;
     final String city = (args['city'] as String?) ?? 'your city';
     final double subtotal = (args['subtotal'] as double?) ?? 0.0;
     final double shipping = (args['shipping'] as double?) ?? 0.0;
@@ -48,11 +49,22 @@ class OrderConfirmedView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Order Confirmed!',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
           ),
+          if (orderId != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Order ID: ${orderId.substring(0, 8)}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           RichText(
             textAlign: TextAlign.center,

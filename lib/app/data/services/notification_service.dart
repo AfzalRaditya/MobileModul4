@@ -5,8 +5,6 @@ import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../../modules/notifications/notification_binding.dart';
-import '../../modules/notifications/notification_view.dart';
 
 class NotificationService {
   NotificationService._privateConstructor();
@@ -151,13 +149,12 @@ class NotificationService {
           importance: Importance.max,
           priority: Priority.high,
           playSound: true,
-          sound: RawResourceAndroidNotificationSound('custom_notification'),
+          // Use default notification sound to avoid missing raw resource in release builds
         );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
       presentSound: true,
-      // iOS custom sound requires adding sound file to Runner project and specifying file name here
-      sound: 'custom_notification.wav',
+      // Use default sound; custom sound file not bundled
     );
 
     final NotificationDetails details = NotificationDetails(
@@ -189,12 +186,12 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       playSound: true,
-      sound: RawResourceAndroidNotificationSound('welcome'),
+      // Use default sound to avoid missing raw resource
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentSound: true,
-      sound: 'welcome.wav',
+      // Use default sound
     );
 
     final details = const NotificationDetails(
@@ -215,7 +212,7 @@ class NotificationService {
     developer.log('Routing payload raw: $payload');
     final Map<String, dynamic> parsed = _normalizePayload(payload);
 
-    final String targetRoute = parsed['route'] as String? ?? '/notifications';
+    final String targetRoute = parsed['route'] as String? ?? '/katalog';
     final dynamic arguments = parsed['arguments'];
 
     developer.log('Routing to $targetRoute with args: $arguments');
@@ -224,9 +221,9 @@ class NotificationService {
     try {
       Get.toNamed(targetRoute, arguments: arguments);
     } catch (e) {
-      // Fallback jika route tidak terdaftar: buka daftar notifikasi
-      developer.log('Navigation error: $e; fallback to /notifications');
-      Get.to(() => const NotificationView(), binding: NotificationBinding());
+      // Fallback jika route tidak terdaftar: kembali ke beranda katalog
+      developer.log('Navigation error: $e; fallback to /katalog');
+      Get.toNamed('/katalog');
     }
   }
 

@@ -13,6 +13,11 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    // Coba beberapa kemungkinan key gambar dari API/Supabase
+    final rawImage = json['gambarUrl'] ?? json['imageUrl'] ?? json['image'] ?? json['gambar'] ?? '';
+    final image = (rawImage is String && rawImage.isNotEmpty)
+        ? rawImage
+        : 'https://placehold.co/400x300';
     
     return ProductModel( 
       id: json['id']?.toString() ?? '0', 
@@ -22,8 +27,7 @@ class ProductModel {
       harga: (json['harga'] is num) 
              ? (json['harga'] as num).toDouble() 
              : double.tryParse(json['harga'].toString()) ?? 0.0,
-             
-      imageUrl: json['gambarUrl'] as String? ?? 'https://placehold.co/400x300', 
+      imageUrl: image,
     );
   }
 }

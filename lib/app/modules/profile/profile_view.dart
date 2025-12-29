@@ -62,10 +62,6 @@ class ProfileView extends StatelessWidget {
           const SizedBox(height: 12),
           const _SectionHeader('Account'),
           _ListTile(
-            title: 'Personal Details',
-            onTap: () => Get.toNamed('/personal-details'),
-          ),
-          _ListTile(
             title: 'Saved Addresses',
             onTap: () => Get.toNamed('/saved-addresses'),
           ),
@@ -79,10 +75,6 @@ class ProfileView extends StatelessWidget {
             title: 'Settings',
             onTap: () => Get.toNamed('/settings'),
           ),
-          _ListTile(
-            title: 'Help & Support',
-            onTap: () => Get.toNamed('/help-support'),
-          ),
           const SizedBox(height: 12),
           SizedBox(
             height: 44,
@@ -95,8 +87,8 @@ class ProfileView extends StatelessWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: scheme.error,
-                foregroundColor: scheme.onError,
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
               ),
               child: const Text('Log Out'),
             ),

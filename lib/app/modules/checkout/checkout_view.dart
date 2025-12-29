@@ -2,11 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/services/location_service.dart';
 import '../../data/models/delivery_address.dart';
+import '../../data/models/order_model.dart';
 import '../../shared/formatters.dart';
 import '../../shared/app_bottom_nav.dart';
 import '../keranjang/keranjang_controller.dart';
+import '../orders/orders_controller.dart';
 
 class CheckoutView extends StatefulWidget {
   const CheckoutView({super.key});
@@ -20,23 +23,74 @@ class _CheckoutViewState extends State<CheckoutView> {
   final _emailC = TextEditingController();
   final _addressC = TextEditingController();
   final _postalC = TextEditingController();
+  final _cityC = TextEditingController();
   String? _city;
   bool _locating = false;
   final _locationService = LocationService();
 
+  // Common Indonesian cities for autocomplete
+  final List<String> _indonesianCities = [
+    'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Makassar', 'Palembang',
+    'Tangerang', 'Depok', 'Bekasi', 'Bogor', 'Batam', 'Pekanbaru', 'Bandar Lampung',
+    'Padang', 'Malang', 'Denpasar', 'Samarinda', 'Tasikmalaya', 'Banjarmasin',
+    'Pontianak', 'Cimahi', 'Balikpapan', 'Jambi', 'Surakarta', 'Serang', 'Mataram',
+    'Manado', 'Yogyakarta', 'Cilegon', 'Kupang', 'Palu', 'Ambon', 'Sukabumi',
+    'Cirebon', 'Pekalongan', 'Kediri', 'Madiun', 'Jayapura', 'Bengkulu',
+    'Dumai', 'Magelang', 'Probolinggo', 'Salatiga', 'Tegal', 'Binjai',
+    'Banda Aceh', 'Bitung', 'Banjarbaru', 'Tarakan', 'Lubuklinggau', 'Tanjungpinang',
+    'Pangkalpinang', 'Batu', 'Singkawang', 'Parepare', 'Palangkaraya', 'Bontang',
+    'Mojokerto', 'Pasuruan', 'Marabahan', 'Sorong', 'Ternate', 'Gorontalo',
+    'Baubau', 'Kendari', 'Tidore', 'Blitar', 'Bukittinggi', 'Solok', 'Padang Panjang',
+    'Payakumbuh', 'Sawahlunto', 'Tanjungbalai', 'Tebing Tinggi', 'Pematangsiantar',
+    'Sibolga', 'Gunungsitoli', 'Pangkal Pinang', 'Lubuklinggau', 'Prabumulih',
+    'Metro', 'Kotabumi', 'Cirebon', 'Purwokerto', 'Banyumas', 'Cilacap'
+  ];
+
   Future<void> _useMyLocation() async {
     setState(() => _locating = true);
     try {
-      DeliveryAddress? addr;
-      try {
-        addr = await _locationService.getDeliveryAddress(useGps: true);
-      } catch (_) {
-        addr = await _locationService.getDeliveryAddress(useGps: false);
+      // Check if location service is enabled
+      final serviceEnabled = await _locationService.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        Get.snackbar(
+          'GPS Tidak Aktif',
+          'Silakan aktifkan GPS/Location Service terlebih dahulu',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        setState(() => _locating = false);
+        return;
       }
+
+      // Check and request permission
+      final hasPermission = await _locationService.isPermissionGranted();
+      if (!hasPermission) {
+        final granted = await _locationService.requestPermission(requireGps: true);
+        if (!granted) {
+          if (!mounted) return;
+          Get.snackbar(
+            'Izin Ditolak',
+            'Aplikasi memerlukan izin lokasi untuk menggunakan fitur ini',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          setState(() => _locating = false);
+          return;
+        }
+      }
+
+      // Get current GPS position with high accuracy
+      final DeliveryAddress? addr = await _locationService.getDeliveryAddress(
+        useGps: true,
+      );
 
       if (!mounted) return;
       if (addr == null) {
-        Get.snackbar('Location', 'Gagal mendapatkan lokasi. Pastikan permission aktif.');
+        Get.snackbar(
+          'Lokasi Gagal',
+          'Tidak dapat mendapatkan lokasi. Pastikan GPS aktif dan coba lagi.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        setState(() => _locating = false);
         return;
       }
 
@@ -44,10 +98,129 @@ class _CheckoutViewState extends State<CheckoutView> {
       if ((addr.postalCode ?? '').isNotEmpty) {
         _postalC.text = addr.postalCode!;
       }
+      if ((addr.city ?? '').isNotEmpty) {
+        _cityC.text = addr.city!;
+        _city = addr.city;
+      }
+      
+      Get.snackbar(
+        'Berhasil',
+        'Lokasi GPS berhasil didapatkan',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withOpacity(0.7),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
     } catch (e) {
-      Get.snackbar('Lokasi gagal', 'Tidak bisa mengambil lokasi: $e');
+      if (!mounted) return;
+      Get.snackbar(
+        'Error',
+        'Gagal mendapatkan lokasi: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
-      setState(() => _locating = false);
+      if (mounted) {
+        setState(() => _locating = false);
+      }
+    }
+  }
+
+  Future<void> _placeOrder(double subtotal, double shipping) async {
+    // Validate inputs
+    if (_nameC.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Nama harus diisi');
+      return;
+    }
+    if (_emailC.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Email harus diisi');
+      return;
+    }
+    if (_addressC.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Alamat harus diisi');
+      return;
+    }
+    if (_city == null) {
+      Get.snackbar('Error', 'Pilih kota terlebih dahulu');
+      return;
+    }
+
+    // Get current user
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      Get.snackbar('Error', 'Anda harus login untuk melakukan pemesanan');
+      return;
+    }
+
+    // Get cart items
+    final cart = Get.isRegistered<KeranjangController>()
+        ? Get.find<KeranjangController>()
+        : null;
+    if (cart == null || cart.itemsLokal.isEmpty) {
+      Get.snackbar('Error', 'Keranjang kosong');
+      return;
+    }
+
+    // Create order items from cart
+    final orderItems = cart.itemsLokal.map((cartItem) {
+      return OrderItemModel(
+        orderId: '', // Will be set after order creation
+        productId: cartItem.productId,
+        productName: cartItem.productName,
+        price: cartItem.price,
+        quantity: cartItem.quantity,
+      );
+    }).toList();
+
+    // Create order
+    final order = OrderModel(
+      userId: userId,
+      customerName: _nameC.text.trim(),
+      customerEmail: _emailC.text.trim(),
+      shippingAddress: _addressC.text.trim(),
+      city: _city,
+      postalCode: _postalC.text.trim().isEmpty ? null : _postalC.text.trim(),
+      subtotal: subtotal,
+      shippingCost: shipping,
+      total: subtotal + shipping,
+      items: orderItems,
+      status: 'pending',
+    );
+
+    // Save order
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
+    try {
+      // Initialize orders controller if not already
+      if (!Get.isRegistered<OrdersController>()) {
+        Get.put(OrdersController());
+      }
+      final ordersController = Get.find<OrdersController>();
+      
+      final orderId = await ordersController.createOrder(order);
+      
+      Get.back(); // Close loading dialog
+      
+      if (orderId != null) {
+        // Clear cart after successful order
+        cart.clearLocalCart();
+        
+        // Navigate to confirmation
+        Get.offAllNamed(
+          '/order-confirmed',
+          arguments: {
+            'orderId': orderId,
+            'city': _city,
+            'subtotal': subtotal,
+            'shipping': shipping,
+          },
+        );
+      }
+    } catch (e) {
+      Get.back(); // Close loading dialog
+      Get.snackbar('Error', 'Gagal membuat pesanan: $e');
     }
   }
 
@@ -120,6 +293,10 @@ class _CheckoutViewState extends State<CheckoutView> {
                 if ((picked.postalCode ?? '').isNotEmpty) {
                   _postalC.text = picked.postalCode!;
                 }
+                if ((picked.city ?? '').isNotEmpty) {
+                  _cityC.text = picked.city!;
+                  setState(() => _city = picked.city);
+                }
               },
               icon: const Icon(Icons.map_outlined),
               label: const Text('Atur di Map'),
@@ -128,18 +305,67 @@ class _CheckoutViewState extends State<CheckoutView> {
           const SizedBox(height: 12),
 
           _LabeledField(
-            label: 'City (Zone)',
-            child: DropdownButtonFormField<String>(
-              initialValue: _city,
-              items: const [
-                DropdownMenuItem(value: 'Jakarta', child: Text('Jakarta')),
-                DropdownMenuItem(value: 'Bogor', child: Text('Bogor')),
-                DropdownMenuItem(value: 'Depok', child: Text('Depok')),
-                DropdownMenuItem(value: 'Tangerang', child: Text('Tangerang')),
-                DropdownMenuItem(value: 'Bekasi', child: Text('Bekasi')),
-              ],
-              onChanged: (v) => setState(() => _city = v),
-              decoration: _decoration('Select City', scheme),
+            label: 'Daerah',
+            child: Autocomplete<String>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.isEmpty) {
+                  return const Iterable<String>.empty();
+                }
+                return _indonesianCities.where((String city) {
+                  return city.toLowerCase().contains(
+                    textEditingValue.text.toLowerCase(),
+                  );
+                });
+              },
+              onSelected: (String selection) {
+                setState(() {
+                  _city = selection;
+                  _cityC.text = selection;
+                });
+              },
+              fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                // Sync with our controller
+                if (_cityC.text.isNotEmpty && controller.text.isEmpty) {
+                  controller.text = _cityC.text;
+                }
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: _decoration('Ketik nama daerah', scheme),
+                  onChanged: (value) {
+                    setState(() {
+                      _city = value.trim().isEmpty ? null : value.trim();
+                      _cityC.text = value;
+                    });
+                  },
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxHeight: 200,
+                        maxWidth: 300,
+                      ),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final option = options.elementAt(index);
+                          return ListTile(
+                            title: Text(option),
+                            onTap: () => onSelected(option),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 12),
@@ -200,14 +426,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                   SizedBox(
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: () => Get.offAllNamed(
-                        '/order-confirmed',
-                        arguments: {
-                          'city': _city,
-                          'subtotal': subtotal,
-                          'shipping': shipping,
-                        },
-                      ),
+                      onPressed: () => _placeOrder(subtotal, shipping),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: scheme.primary,
                         foregroundColor: scheme.onPrimary,

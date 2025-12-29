@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app/data/services/notification_service.dart';
-import 'app/modules/notifications/notification_binding.dart';
-import 'app/modules/notifications/notification_view.dart';
 import 'app/data/services/local_storage_service.dart';
 import 'app/data/providers/supabase_provider.dart';
 import 'app/modules/katalog/katalog_binding.dart';
@@ -23,12 +22,11 @@ import 'app/modules/checkout/checkout_view.dart';
 import 'app/modules/profile/profile_view.dart';
 import 'app/modules/checkout/order_confirmed_view.dart';
 import 'app/modules/orders/orders_view.dart';
+import 'app/modules/orders/orders_binding.dart';
 import 'app/modules/location/views/location_picker_view.dart';
 import 'app/shared/app_theme_controller.dart';
 import 'app/modules/settings/settings_view.dart';
-import 'app/modules/settings/personal_details_view.dart';
 import 'app/modules/settings/saved_addresses_view.dart';
-import 'app/modules/settings/help_support_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +37,9 @@ Future<void> main() async {
 
   // Initialize notification service (FCM + local notifications)
   await NotificationService().init();
+
+  // Init locale data for intl (date/number formatting)
+  await initializeDateFormatting('id_ID', null);
 
   // ---------------------------------------------------------
   // 1. INISIALISASI SERVICE (DATABASE & LOCAL STORAGE)
@@ -80,14 +81,14 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.brown,
+            seedColor: const Color(0xFF1ABC9C), // Teal color from logo
             brightness: Brightness.light,
           ),
         ),
         darkTheme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.brown,
+            seedColor: const Color(0xFF16A085), // Darker teal for dark mode
             brightness: Brightness.dark,
           ),
         ),
@@ -121,6 +122,7 @@ class MyApp extends StatelessWidget {
           GetPage(
             name: "/orders",
             page: () => const OrdersView(),
+            binding: OrdersBinding(),
           ),
 
           GetPage(
@@ -147,16 +149,8 @@ class MyApp extends StatelessWidget {
             page: () => const SettingsView(),
           ),
           GetPage(
-            name: "/personal-details",
-            page: () => const PersonalDetailsView(),
-          ),
-          GetPage(
             name: "/saved-addresses",
             page: () => const SavedAddressesView(),
-          ),
-          GetPage(
-            name: "/help-support",
-            page: () => const HelpSupportView(),
           ),
 
           GetPage(
@@ -167,12 +161,6 @@ class MyApp extends StatelessWidget {
           GetPage(
             name: "/order-confirmed",
             page: () => const OrderConfirmedView(),
-          ),
-          // Notifications route (so we can navigate by name from background/terminated)
-          GetPage(
-            name: "/notifications",
-            page: () => const NotificationView(),
-            binding: NotificationBinding(),
           ),
         ],
       ),

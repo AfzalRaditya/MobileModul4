@@ -114,8 +114,15 @@ class KeranjangController extends GetxController {
       
       _syncHiveSafely(); 
       
-      Get.snackbar("Lokal", "${produk.nama} ditambahkan (Hive)");
+      Get.snackbar("Keranjang", "${produk.nama} ditambahkan");
     }
+  }
+
+  /// Hapus seluruh keranjang lokal dan simpan ke Hive agar konsisten ketika
+  /// controller diinisialisasi ulang setelah navigasi.
+  void clearLocalCart() {
+    itemsLokal.clear();
+    _syncHiveSafely();
   }
 
   // =========================================================

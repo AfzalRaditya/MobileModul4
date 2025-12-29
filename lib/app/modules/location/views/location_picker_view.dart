@@ -19,12 +19,43 @@ class _LocationPickerViewState extends State<LocationPickerView> {
 
   LatLng _center = const LatLng(-6.200000, 106.816666); // default Jakarta
   bool _loading = false;
+  bool _initializing = true;
   String? _hint;
 
   @override
   void initState() {
     super.initState();
-    _hint = 'Geser peta untuk memilih lokasi';
+    _hint = 'Mengambil lokasi GPS Anda...';
+    _initializeWithCurrentLocation();
+  }
+
+  Future<void> _initializeWithCurrentLocation() async {
+    try {
+      // Try to get current GPS location
+      final pos = await _locationService.getCurrentPosition(
+        useGps: true,
+        timeout: const Duration(seconds: 8),
+      );
+      
+      if (pos != null && mounted) {
+        setState(() {
+          _center = LatLng(pos.latitude, pos.longitude);
+          _hint = 'Geser peta untuk memilih lokasi';
+        });
+        
+        // Move map to current location
+        _mapController.move(_center, 16);
+      }
+    } catch (e) {
+      // Fallback to default if GPS fails
+      if (mounted) {
+        setState(() => _hint = 'Geser peta untuk memilih lokasi');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _initializing = false);
+      }
+    }
   }
 
   Future<void> _useCenter() async {
@@ -84,7 +115,7 @@ class _LocationPickerViewState extends State<LocationPickerView> {
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'demo4',
+                userAgentPackageName: 'muktijaya1',
               ),
             ],
           ),

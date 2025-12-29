@@ -51,10 +51,18 @@ class AuthView extends StatelessWidget {
                               color: scheme.surfaceContainerHighest,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              Icons.inventory_2,
+                            alignment: Alignment.center,
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 36,
+                              height: 36,
+                              // Tint sesuai tema jika dibutuhkan
                               color: scheme.primary,
-                              size: 32,
+                              errorBuilder: (context, error, stack) => Icon(
+                                Icons.inventory_2,
+                                color: scheme.primary,
+                                size: 32,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),

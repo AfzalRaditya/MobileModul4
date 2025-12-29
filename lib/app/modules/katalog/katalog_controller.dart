@@ -14,6 +14,9 @@ class KatalogController extends GetxController {
 
   final RxBool isLoading = true.obs;
   final RxList<ProductModel> produkList = <ProductModel>[].obs;
+  // Query pencarian (untuk filter realtime)
+  final RxString searchQuery = ''.obs;
+  final searchController = TextEditingController();
 
   Rx<ThemeMode> themeMode = ThemeMode.system.obs;
 
@@ -63,14 +66,55 @@ class KatalogController extends GetxController {
   Future<void> fetchKatalogData() async {
     try {
       isLoading.value = true;
-      final products = await _apiService.fetchProductsDio();
-      produkList.assignAll(products);
+      
+      // Fetch dari Supabase products table
+      final supabase = Get.find<SupabaseProvider>();
+      final response = await supabase.client.value
+          ?.from('products')
+          .select()
+          .order('id', ascending: true);
+      
+      if (response != null) {
+        final products = (response as List)
+            .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        produkList.assignAll(products);
+      }
     } catch (e) {
       debugPrint("Error fetching data: $e");
-      Get.snackbar("Error", "Gagal memuat katalog.");
+      Get.snackbar("Error", "Gagal memuat katalog: $e");
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Refresh data katalog
+  Future<void> refreshKatalog() async {
+    await fetchKatalogData();
+  }
+
+  // Set query pencarian
+  void setSearch(String value) {
+    searchQuery.value = value;
+  }
+
+  // Clear search
+  void clearSearch() {
+    searchQuery.value = '';
+    searchController.clear();
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
+  }
+
+  // Daftar produk yang sudah difilter berdasarkan pencarian
+  List<ProductModel> get filteredProduk {
+    final q = searchQuery.value.trim().toLowerCase();
+    if (q.isEmpty) return produkList;
+    return produkList.where((p) => p.nama.toLowerCase().contains(q)).toList();
   }
 
   Future<void> runHttpComparison() async {

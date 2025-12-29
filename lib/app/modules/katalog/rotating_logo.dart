@@ -32,10 +32,17 @@ class RotatingLogoState extends State<RotatingLogo>
   Widget build(BuildContext context) {
     return RotationTransition(
       turns: _controller,
-      child: Icon(
-        Icons.inventory_2, 
-        size: 80, 
-        color: Colors.brown[700],
+      child: Image.asset(
+        'assets/images/logo.png',
+        width: 80,
+        height: 80,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.inventory_2,
+            size: 80,
+            color: const Color(0xFF1ABC9C),
+          );
+        },
       ),
     );
   }

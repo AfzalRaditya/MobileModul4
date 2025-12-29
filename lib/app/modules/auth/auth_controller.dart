@@ -3,6 +3,7 @@
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../../data/providers/supabase_provider.dart';
 import '../../data/services/local_storage_service.dart'; // Import service lokal
 import '../../data/services/notification_service.dart';
@@ -68,7 +69,7 @@ class AuthController extends GetxController {
         Get.offAllNamed("/katalog");
         Get.snackbar(
           "Sukses!",
-          "Login berhasil. User ID: ${response.user?.id ?? 'ID tidak ditemukan'}",
+          "Login berhasil",
         );
         _updateLoginStatus();
       } else {
@@ -76,9 +77,21 @@ class AuthController extends GetxController {
       }
     } on AuthException catch (e) {
       debugPrint("Auth Error: ${e.message}");
-      Get.snackbar("Error Login", e.message);
+      // Tampilkan snackbar dengan pesan "Email atau password salah"
+      Get.snackbar(
+        "Error Login",
+        "Email atau password salah",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
     } catch (e) {
-      Get.snackbar("Error", "Terjadi kesalahan: $e");
+      Get.snackbar(
+        "Error",
+        "Terjadi kesalahan: $e",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }

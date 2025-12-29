@@ -20,7 +20,7 @@ class RegisterView extends GetView<AuthController> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.person_add, size: 80, color: Colors.brown),
+            Icon(Icons.person_add, size: 80, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 20),
 
             // Input Email
@@ -54,8 +54,8 @@ class RegisterView extends GetView<AuthController> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.brown,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                         ),
                         onPressed: () {

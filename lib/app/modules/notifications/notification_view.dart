@@ -44,43 +44,7 @@ class _NotificationViewState extends State<NotificationView> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Card(
-              child: ListTile(
-                title: const Text('FCM Token (debug)'),
-                subtitle: Text(_fcmToken ?? 'Fetching token...'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.copy),
-                      tooltip: 'Copy token',
-                      onPressed: _fcmToken == null
-                          ? null
-                          : () {
-                              Clipboard.setData(
-                                ClipboardData(text: _fcmToken ?? ''),
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Token copied')),
-                              );
-                            },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh),
-                      tooltip: 'Refresh token',
-                      onPressed: _loadToken,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Obx(() {
+      body: Obx(() {
               if (controller.items.isEmpty) {
                 return const Center(child: Text('No notifications'));
               }
@@ -115,9 +79,6 @@ class _NotificationViewState extends State<NotificationView> {
                 },
               );
             }),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -160,26 +160,6 @@ class KeranjangView extends GetView<KeranjangController> {
                     child: const Text('Checkout Now'),
                   ),
                 ),
-                const SizedBox(height: 8),
-                // Aksi sinkronisasi tetap tersedia di bawah
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: controller.fetchCloudCart,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Reload Cloud'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: controller.syncLocalToCloud,
-                        child: const Text('Sync to Cloud (Upsert)'),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
