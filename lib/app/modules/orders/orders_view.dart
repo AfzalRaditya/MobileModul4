@@ -8,6 +8,11 @@ import 'orders_controller.dart';
 class OrdersView extends GetView<OrdersController> {
   const OrdersView({super.key});
 
+  bool _isCompleted(String status) {
+    final s = status.trim().toLowerCase();
+    return s == 'completed' || s == 'done' || s == 'selesai';
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -55,6 +60,8 @@ class OrdersView extends GetView<OrdersController> {
             itemCount: controller.orders.length,
             itemBuilder: (context, index) {
               final order = controller.orders[index];
+              final completed = _isCompleted(order.status);
+              final completing = controller.isCompleting(order.id);
               final firstItem = order.items.isNotEmpty ? order.items.first : null;
               final otherCount = order.items.length > 1 ? order.items.length - 1 : 0;
 
@@ -101,21 +108,53 @@ class OrdersView extends GetView<OrdersController> {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'Selesai',
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            child: completed
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      'Selesai',
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  )
+                                : OutlinedButton(
+                                    onPressed: (order.id == null || completing)
+                                        ? null
+                                        : () => controller.markOrderCompleted(order.id),
+                                    style: OutlinedButton.styleFrom(
+                                      shape: const StadiumBorder(),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      side: BorderSide(color: scheme.primary),
+                                      foregroundColor: scheme.primary,
+                                    ),
+                                    child: completing
+                                        ? SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: scheme.primary,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Pesanan selesai',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                  ),
                           ),
                         ],
                       ),

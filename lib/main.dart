@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
 
     return Obx(
       () => GetMaterialApp(
-        title: "Muktijaya1 - Packaging Kardus",
+        title: "Griya Daster Ayu - Packaging Kardus",
         debugShowCheckedModeBanner: false,
 
         themeMode: theme.themeMode.value,

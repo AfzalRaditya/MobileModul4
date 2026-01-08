@@ -10,6 +10,12 @@ class OrdersController extends GetxController {
   
   final RxList<OrderModel> orders = <OrderModel>[].obs;
   final RxBool isLoading = false.obs;
+  final RxSet<String> _completingOrderIds = <String>{}.obs;
+
+  bool isCompleting(String? orderId) {
+    if (orderId == null) return false;
+    return _completingOrderIds.contains(orderId);
+  }
 
   String? get currentUserId {
     try {
@@ -135,6 +141,46 @@ class OrdersController extends GetxController {
       debugPrint('Error creating order: $e');
       Get.snackbar('Error', 'Terjadi kesalahan saat membuat pesanan');
       return null;
+    }
+  }
+
+  Future<void> markOrderCompleted(String? orderId) async {
+    if (orderId == null || orderId.isEmpty) return;
+
+    if (_completingOrderIds.contains(orderId)) return;
+    _completingOrderIds.add(orderId);
+    try {
+      await _supabase.from('orders').update({'status': 'completed'}).eq('id', orderId);
+
+      final index = orders.indexWhere((o) => o.id == orderId);
+      if (index != -1) {
+        final order = orders[index];
+        orders[index] = OrderModel(
+          id: order.id,
+          userId: order.userId,
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          shippingAddress: order.shippingAddress,
+          city: order.city,
+          postalCode: order.postalCode,
+          subtotal: order.subtotal,
+          shippingCost: order.shippingCost,
+          total: order.total,
+          items: order.items,
+          status: 'completed',
+          createdAt: order.createdAt,
+        );
+      }
+
+      Get.snackbar('Sukses', 'Pesanan ditandai selesai');
+    } on PostgrestException catch (e) {
+      debugPrint('Error updating order status: ${e.message}');
+      Get.snackbar('Error', 'Gagal mengubah status pesanan');
+    } catch (e) {
+      debugPrint('Error updating order status: $e');
+      Get.snackbar('Error', 'Terjadi kesalahan saat mengubah status');
+    } finally {
+      _completingOrderIds.remove(orderId);
     }
   }
 }

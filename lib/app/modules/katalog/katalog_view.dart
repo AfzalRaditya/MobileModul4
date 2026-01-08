@@ -62,7 +62,7 @@ class KatalogView extends GetView<KatalogController> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Muktijaya1',
+                                'Griya Daster Ayu',
                                 style: TextStyle(
                                   color: scheme.onPrimary,
                                   fontSize: 18,
@@ -94,7 +94,7 @@ class KatalogView extends GetView<KatalogController> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Welcome to Muktijaya1',
+                        'Welcome to Griya Daster Ayu',
                         style: TextStyle(
                           color: scheme.onPrimary,
                           fontSize: 22,
@@ -103,7 +103,7 @@ class KatalogView extends GetView<KatalogController> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Your one-stop solution for premium packaging materials. High quality, durable, and eco-friendly options available.',
+                        'Temukan koleksi daster yang nyaman untuk sehari-hari.',
                         style: TextStyle(color: scheme.onPrimary.withAlpha(220)),
                       ),
                       const SizedBox(height: 16),
@@ -143,7 +143,7 @@ class KatalogView extends GetView<KatalogController> {
                           Icon(
                             Icons.search_off,
                             size: 64,
-                            color: scheme.onSurfaceVariant.withOpacity(0.5),
+                            color: scheme.onSurfaceVariant.withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -158,7 +158,7 @@ class KatalogView extends GetView<KatalogController> {
                           Text(
                             'Coba kata kunci lain',
                             style: TextStyle(
-                              color: scheme.onSurfaceVariant.withOpacity(0.7),
+                              color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
                             ),
                           ),
                         ],

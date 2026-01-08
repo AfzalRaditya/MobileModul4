@@ -107,7 +107,7 @@ class _CheckoutViewState extends State<CheckoutView> {
         'Berhasil',
         'Lokasi GPS berhasil didapatkan',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.7),
+        backgroundColor: Colors.green.withValues(alpha: 0.7),
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );

@@ -2,7 +2,6 @@
 
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/providers/supabase_provider.dart';
 import '../../data/services/local_storage_service.dart'; // Import service lokal

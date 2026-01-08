@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'notification_controller.dart';
 
 class NotificationView extends StatefulWidget {
@@ -12,23 +10,6 @@ class NotificationView extends StatefulWidget {
 }
 
 class _NotificationViewState extends State<NotificationView> {
-  String? _fcmToken;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadToken();
-  }
-
-  Future<void> _loadToken() async {
-    try {
-      final token = await FirebaseMessaging.instance.getToken();
-      setState(() => _fcmToken = token);
-    } catch (e) {
-      setState(() => _fcmToken = 'Error: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<NotificationController>();

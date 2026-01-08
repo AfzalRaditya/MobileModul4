@@ -67,7 +67,7 @@ class AuthView extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Muktijaya1',
+                            'Griya Daster Ayu',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
@@ -195,7 +195,7 @@ class AuthView extends StatelessWidget {
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Text(
-              '© 2024 Muktijaya1. All rights reserved.',
+              '© 2024 Griya Daster Ayu. All rights reserved.',
               textAlign: TextAlign.center,
               style: TextStyle(color: scheme.onPrimary.withAlpha(200)),
             ),

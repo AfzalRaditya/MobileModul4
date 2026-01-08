@@ -17,7 +17,7 @@ class ApiService {
       connectTimeout: const Duration(seconds: 10), 
       receiveTimeout: const Duration(seconds: 10), 
       headers: {
-        'User-Agent': 'Muktijaya1App/1.0', 
+        'User-Agent': 'GriyaDasterAyuApp/1.0', 
         'Accept': 'application/json',
       },
     ));
