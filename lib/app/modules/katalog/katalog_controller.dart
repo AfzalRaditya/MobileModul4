@@ -8,6 +8,20 @@ import '../../data/services/local_storage_service.dart';
 // Tambahkan import Supabase Provider
 import '../../data/providers/supabase_provider.dart';
 
+enum SearchScope {
+  nama,
+  id,
+  harga,
+}
+
+enum SortOption {
+  terbaru, // default order from fetch
+  namaAsc,
+  namaDesc,
+  hargaAsc,
+  hargaDesc,
+}
+
 class KatalogController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
   final LocalStorageService _localStorage = Get.find<LocalStorageService>();
@@ -17,6 +31,18 @@ class KatalogController extends GetxController {
   // Query pencarian (untuk filter realtime)
   final RxString searchQuery = ''.obs;
   final searchController = TextEditingController();
+
+  // Scoped Search (default: Nama)
+  final Rx<SearchScope> searchScope = SearchScope.nama.obs;
+
+  // Onscreen Sort (default: terbaru)
+  final Rx<SortOption> sortOption = SortOption.terbaru.obs;
+
+  // Filters
+  // Note: ProductModel currently only has id, nama, harga, imageUrl
+  // so filters are implemented as price range.
+  final RxnInt minHarga = RxnInt();
+  final RxnInt maxHarga = RxnInt();
 
   Rx<ThemeMode> themeMode = ThemeMode.system.obs;
 
@@ -98,6 +124,49 @@ class KatalogController extends GetxController {
     searchQuery.value = value;
   }
 
+  // Explicit search: dipanggil saat user menekan tombol cari / submit keyboard
+  void submitSearch() {
+    final q = searchController.text.trim();
+    searchQuery.value = q;
+    // Force notify so explicit action (arrow) always triggers a refresh,
+    // even when the query text didn't change.
+    searchQuery.refresh();
+  }
+
+  void setScope(SearchScope scope) {
+    if (searchScope.value == scope) return;
+    searchScope.value = scope;
+  }
+
+  void setSort(SortOption option) {
+    if (sortOption.value == option) return;
+    sortOption.value = option;
+  }
+
+  void setMinHarga(int? value) {
+    minHarga.value = value;
+  }
+
+  void setMaxHarga(int? value) {
+    maxHarga.value = value;
+  }
+
+  void clearFilters() {
+    minHarga.value = null;
+    maxHarga.value = null;
+  }
+
+  bool get hasActiveFilters =>
+      minHarga.value != null || maxHarga.value != null;
+
+  void applySuggestion(String value) {
+    searchController.text = value;
+    searchController.selection = TextSelection.fromPosition(
+      TextPosition(offset: value.length),
+    );
+    submitSearch();
+  }
+
   // Clear search
   void clearSearch() {
     searchQuery.value = '';
@@ -113,8 +182,95 @@ class KatalogController extends GetxController {
   // Daftar produk yang sudah difilter berdasarkan pencarian
   List<ProductModel> get filteredProduk {
     final q = searchQuery.value.trim().toLowerCase();
-    if (q.isEmpty) return produkList;
-    return produkList.where((p) => p.nama.toLowerCase().contains(q)).toList();
+    final List<ProductModel> base;
+
+    if (q.isEmpty) {
+      base = produkList.toList(growable: false);
+    } else {
+      switch (searchScope.value) {
+        case SearchScope.nama:
+          base = produkList.where((p) => p.nama.toLowerCase().contains(q)).toList();
+          break;
+        case SearchScope.id:
+          base = produkList.where((p) => p.id.toLowerCase().contains(q)).toList();
+          break;
+        case SearchScope.harga:
+          final digits = q.replaceAll(RegExp(r'[^0-9]'), '');
+          if (digits.isEmpty) return <ProductModel>[];
+
+          base = produkList.where((p) {
+            final priceInt = p.harga.round().toString();
+            return priceInt.contains(digits);
+          }).toList();
+          break;
+      }
+    }
+
+    // Apply filters after search
+    final int? min = minHarga.value;
+    final int? max = maxHarga.value;
+    final List<ProductModel> filteredByPrice;
+    if (min == null && max == null) {
+      filteredByPrice = base;
+    } else {
+      filteredByPrice = base.where((p) {
+        final price = p.harga;
+        if (min != null && price < min) return false;
+        if (max != null && price > max) return false;
+        return true;
+      }).toList(growable: false);
+    }
+
+    if (filteredByPrice.length <= 1) return filteredByPrice;
+
+    // Apply sorting after filtering
+    final sorted = filteredByPrice.toList(growable: false);
+    switch (sortOption.value) {
+      case SortOption.terbaru:
+        // keep original fetch order
+        return sorted;
+      case SortOption.namaAsc:
+        sorted.sort((a, b) => a.nama.toLowerCase().compareTo(b.nama.toLowerCase()));
+        return sorted;
+      case SortOption.namaDesc:
+        sorted.sort((a, b) => b.nama.toLowerCase().compareTo(a.nama.toLowerCase()));
+        return sorted;
+      case SortOption.hargaAsc:
+        sorted.sort((a, b) => a.harga.compareTo(b.harga));
+        return sorted;
+      case SortOption.hargaDesc:
+        sorted.sort((a, b) => b.harga.compareTo(a.harga));
+        return sorted;
+    }
+  }
+
+  // Auto-complete suggestions
+  List<String> get suggestions {
+    final q = searchQuery.value.trim().toLowerCase();
+    if (q.length < 2) return const <String>[];
+
+    final List<String> items;
+    switch (searchScope.value) {
+      case SearchScope.nama:
+        items = produkList.map((p) => p.nama).toList(growable: false);
+        break;
+      case SearchScope.id:
+        items = produkList.map((p) => p.id).toList(growable: false);
+        break;
+      case SearchScope.harga:
+        items = produkList
+            .map((p) => p.harga.round().toString())
+            .toSet()
+            .toList(growable: false);
+        break;
+    }
+
+    final filtered = items
+        .where((s) => s.toLowerCase().contains(q))
+        .toSet()
+        .toList(growable: false);
+    filtered.sort((a, b) => a.length.compareTo(b.length));
+    return filtered.take(6).toList(growable: false);
   }
 
   Future<void> runHttpComparison() async {
