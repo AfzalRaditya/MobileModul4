@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../shared/app_bottom_nav.dart';
+import 'order_detail_view.dart';
 import '../../shared/formatters.dart';
 import 'orders_controller.dart';
 
@@ -24,7 +25,45 @@ class OrdersView extends GetView<OrdersController> {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
+        // If user is not logged in, show a helpful prompt to login
+        if (controller.currentUserId == null) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.person_off_outlined,
+                    size: 64,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum login',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Silakan masuk untuk melihat riwayat pesanan Anda',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 18),
+                  ElevatedButton(
+                    onPressed: () {
+                      // navigate to profile or login route
+                      Get.toNamed('/profile');
+                    },
+                    child: const Text('Masuk / Profil'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         if (controller.orders.isEmpty) {
           return Center(
             child: Padding(
@@ -65,7 +104,9 @@ class OrdersView extends GetView<OrdersController> {
               final firstItem = order.items.isNotEmpty ? order.items.first : null;
               final otherCount = order.items.length > 1 ? order.items.length - 1 : 0;
 
-              return Card(
+              return InkWell(
+                onTap: (order.id == null) ? null : () => Get.to(() => OrderDetailView(orderId: order.id!)),
+                child: Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -216,7 +257,8 @@ class OrdersView extends GetView<OrdersController> {
                     ],
                   ),
                 ),
-              );
+              ),
+            );
             },
           ),
         );

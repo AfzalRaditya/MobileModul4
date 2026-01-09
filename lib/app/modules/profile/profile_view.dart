@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../modules/auth/auth_controller.dart';
 import '../../shared/app_bottom_nav.dart';
+import '../../modules/settings/help_support_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileView extends StatelessWidget {
@@ -74,6 +75,10 @@ class ProfileView extends StatelessWidget {
           _ListTile(
             title: 'Settings',
             onTap: () => Get.toNamed('/settings'),
+          ),
+          _ListTile(
+            title: 'Help & Support',
+            onTap: () => Get.to(() => const HelpSupportView()),
           ),
           const SizedBox(height: 12),
           SizedBox(

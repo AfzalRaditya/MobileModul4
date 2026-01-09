@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../data/models/product_model.dart';
 import '../../shared/formatters.dart';
+import '../../widgets/product_overview.dart';
 
 // =========================================================
 // WIDGET: ProductCard (Widget Utama Kartu)
@@ -23,7 +24,7 @@ class ProductCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
-        onTap: onBuy,
+        onTap: () => showProductOverview(context, produk),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

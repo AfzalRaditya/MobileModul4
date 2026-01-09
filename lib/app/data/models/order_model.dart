@@ -62,9 +62,17 @@ class OrderModel {
       total: (map['total'] as num?)?.toDouble() ?? 0.0,
       items: [], // Items loaded separately from order_items table
       status: map['status'] as String? ?? 'pending',
-      createdAt: map['created_at'] != null
-          ? DateTime.parse(map['created_at'] as String)
-          : DateTime.now(),
+      createdAt: (() {
+        final val = map['created_at'];
+        if (val == null) return DateTime.now();
+        if (val is String) return DateTime.parse(val);
+        if (val is DateTime) return val;
+        try {
+          return DateTime.parse(val.toString());
+        } catch (_) {
+          return DateTime.now();
+        }
+      })(),
     );
   }
 }
@@ -101,7 +109,8 @@ class OrderItemModel {
     return OrderItemModel(
       id: map['id']?.toString(),
       orderId: map['order_id'] as String? ?? '',
-      productId: map['product_id'] as String? ?? '',
+      // product_id in the database may be bigint (int) or text; normalize to String
+      productId: map['product_id']?.toString() ?? '',
       productName: map['product_name'] as String? ?? '',
       price: (map['price'] as num?)?.toDouble() ?? 0.0,
       quantity: map['quantity'] as int? ?? 0,
